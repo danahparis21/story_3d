@@ -276,6 +276,80 @@
             color: #667
         }
 
+        /* ---- CHAPTER CARD (special beat type) ---- */
+        #chapter-card {
+            position: fixed;
+            inset: 0;
+            z-index: 7;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 24px;
+            background: #000c;
+            color: #fff;
+            pointer-events: none;
+        }
+
+        #chapter-card .ch-label {
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #ffd23f;
+            margin-bottom: 10px;
+        }
+
+        #chapter-card .ch-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            font-family: Georgia, serif;
+        }
+
+        #chapter-card .ch-sub {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        @keyframes chapterIn {
+            from { opacity: 0; transform: scale(1.06); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes chapterOut {
+            from { opacity: 1; }
+            to   { opacity: 0; }
+        }
+
+        /* ---- REWIND OVERLAY ---- */
+        #rewind-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: .06em;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        #rewind-overlay .rw-icon {
+            font-size: 4rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(-360deg); }
+        }
+
         .winner-banner {
             width: min(640px, 94vw);
             background: linear-gradient(135deg, #1e293b 0%, #2a2215 50%, #1e293b 100%);
@@ -374,6 +448,8 @@
     <div id="narr"></div>
     <div id="card"></div>
     <div id="vote"></div>
+    <div id="chapter-card"></div>
+    <div id="rewind-overlay"><div class="rw-icon">↺</div><div>Rewinding...</div></div>
     <button id="back">Back</button><button id="next">Click to start</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -514,6 +590,64 @@
                     [0, "I'm Leo. I know exactly how the machine works because I was the one who created it.", "0:cheer,1:sad", "calm", "✨", "The true creator"]
                 ],
                 q: "You can steal a name on a patent, but you cannot fake the understanding to make it work."
+            },
+            {
+                t: "PATCH LATER", g: "Drama — What If format (two endings)", i: "Data privacy, honesty, accountability in tech", e: "🩹", sky: "#1a2a1a",
+                h: "He found the bug at midnight. His boss said ship it and say nothing. One decision. Two very different outcomes.",
+                cast: [["Dev Rafa", "#2a7a3f", "#111"], ["Boss Edwin", "#6b1a1a", "#2b1b10", "cap:#2a2d38"], ["Ate Cora (sari-sari)", "#e4b55a", "#555"], ["Tina (senior tester)", "#5a6abf", "#222"]],
+                b: [
+                    /* ---- OPENING ---- */
+                    [-1, "PayLokal is a small Filipino e-wallet launching nationwide tomorrow. Ate Cora uses it every day at her sari-sari store.", "2:cheer", "warm", "📱", "PayLokal — nationwide launch: tomorrow"],
+                    [2, "Kamusta! Bayad na ko. Dali-dali pa — walang linya, walang hassle!", "2:cheer", "warm", "🏪", "Sari-sari store: Brgy. Pag-asa"],
+                    [-1, "Late that night at the office, junior developer Rafa is doing a final pre-launch check.", "0:desk", "calm", "🌙", "11:47 PM — night before launch"],
+                    [0, "Alright... last scan before we go live. This should be clean.", "0:desk", "calm"],
+                    [-1, "He runs a quick API test — no login token, no credentials. And the response comes back with real user data.", "0:shock", "alarm", "🔓", "GET /users → 200 OK: names, phones, balances exposed"],
+                    [0, "What... this returns full names, phone numbers, and balances without any login? Anyone on the internet can read this.", "0:shock", "alarm", "⚠️", "CRITICAL: Unauthenticated data exposure"],
+                    [-1, "He calls his boss immediately.", "0:phone,1:phone", "alarm"],
+                    [1, "Rafa. It's midnight. What?", "1:idle"],
+                    [0, "Boss, I found a critical bug. The user data endpoint has no authentication. Anyone can pull names, numbers, and balances without logging in.", "0:phone", "alarm"],
+                    [1, "How bad?", "1:idle"],
+                    [0, "Very bad. If this goes live, any script kiddie can scrape every user's data in minutes.", "0:phone", "alarm", "⚠️", "Risk: total user data exposure"],
+                    [1, "Listen to me. We ship tomorrow. Investors are watching. Patch it after launch — just don't put it in the report.", "1:point", "dark", "🚫", "\"Don't put it in the report.\""],
+                    [0, "...", "0:idle", "dark"],
+
+                    /* ---- THE CHOICE — special chapter beat ---- */
+                    [-2, "WHAT WOULD YOU DO?", "Ending A: Stay quiet. Ending B: Speak up.", ""],
+
+                    /* ---- ENDING A ---- */
+                    [-3, "ENDING A", "He stays quiet.", "#ff4d4d"],
+                    [-1, "Rafa closes the bug report. He deletes it without saving. The app launches on time.", "0:desk", "dark", "🗑️", "Bug report: DELETED"],
+                    [0, "It'll be patched soon anyway... right?", "0:sad", "dark"],
+                    [-1, "Three days later, a hacker discovers the exposed endpoint and runs a scraper. 48,000 user records downloaded in under an hour.", "0:idle,1:idle", "alarm", "☠️", "48,000 records exfiltrated"],
+                    [-1, "Ate Cora's phone rings.", "2:phone", "alarm", "📞", "Incoming call: unknown number"],
+                    [2, "Hello?", "2:phone"],
+                    [-1, "A voice on the line knows her full name, her balance, even her last transaction. She thinks it's support.", "2:phone", "alarm", "🎭", "Caller knows: full name · balance · last txn"],
+                    [2, "Ay, oo nga — tama lahat! Sige, heto na OTP ko...", "2:phone", "alarm"],
+                    [-1, "She loses her savings. The incident makes the news. Data Privacy Act violation. 48,000 victims.", "2:sad", "alarm", "📰", "Headline: PayLokal Data Leak — 48,000 Filipinos affected"],
+                    [1, "Who knew about this bug? Someone had to know!", "1:point", "dark"],
+                    [0, "Boss, you told me to—", "0:idle", "dark"],
+                    [1, "I never said that. There's nothing written down. It's your word against mine.", "1:point", "dark", "📋", "Written record: none"],
+                    [-1, "Because nothing was documented, Rafa has no proof. He alone faces the investigation.", "0:sad", "dark", "🔍", "Internal investigation: Rafa flagged"],
+
+                    /* ---- REWIND ---- */
+                    [-4, "REWIND", "", ""],
+
+                    /* ---- ENDING B ---- */
+                    [-3, "ENDING B", "He speaks up.", "#34d399"],
+                    [-1, "Instead of deleting it, Rafa writes the full bug report with timestamps and evidence. He messages senior tester Tina.", "0:desk,3:phone", "calm", "📄", "Bug report: FILED & TIMESTAMPED"],
+                    [0, "Tina, I need you to review this tonight. It's serious.", "0:phone", "calm"],
+                    [3, "Sending me the repro steps now. Give me ten minutes.", "3:desk", "calm"],
+                    [-1, "Tina confirms it. Unauthenticated access. CVSS score: Critical.", "3:shock", "alarm", "🔬", "CVSS 9.8 — Critical severity confirmed"],
+                    [3, "Rafa, this is a 9.8. We cannot ship this. This is exactly what the Data Privacy Act was written for.", "3:point", "alarm", "⚖️", "RA 10173 — Data Privacy Act of 2012"],
+                    [-1, "The next morning, Rafa and Tina present the report to Boss Edwin together.", "0:point,3:point,1:idle", "calm", "📊", "Formal bug presentation"],
+                    [0, "A three-day delay costs us launch momentum. A data leak costs our users their savings and costs the company under the DPA.", "0:point", "calm"],
+                    [3, "And if this comes out after launch, it's not a bug anymore — it's negligence.", "3:point", "calm", "⚠️", "Negligence vs. responsible disclosure"],
+                    [1, "...", "1:idle", "dark"],
+                    [1, "Fine. Three days. Fix it right.", "1:sad", "calm", "✅", "Launch delayed 3 days — bug fixed"],
+                    [-1, "The patch ships. The launch goes ahead three days later. Ate Cora keeps using the app, never knowing how close it was.", "2:cheer,0:cheer,3:cheer", "warm", "🛡️", "Users protected. Data safe."],
+                    [2, "Grabe, ang bilis ng PayLokal! Dati pa ko gumagamit nito, hindi ko ibibigay sa iba!", "2:cheer", "warm", "🏪", "Users: safe and happy"]
+                ],
+                q: "Users never see the bugs we hide. They only feel the damage.\n\nIf you see something — document it. Report it. Don't patch later."
             }
         ];
         const $ = s => document.querySelector(s);
@@ -575,38 +709,180 @@
 
         /* ---- FLOW ---- */
         let si = 0, bi = -1, mode = 'title', spk = -1, picked = [], now = 0, mood = 'calm', started = false;
+        let rewindPending = false;
         const camT = new THREE.Vector3(0, 2.9, 8.6), look = new THREE.Vector3(0, 1.9, 0), lookT = new THREE.Vector3(0, 1.9, 0);
         function nav() { $('#top').innerHTML = S.map((s, i) => `<button class="pill ${mode !== 'vote' && i === si ? 'on' : ''}" onclick="jump(${i})">${i + 1}</button>`).join('') + `<button class="pill ${mode === 'vote' ? 'on' : ''}" onclick="goVote()">Vote</button><button class="pill" onclick="toggleMusic()">${musicOn ? '🔊' : '🔇'}</button>` }
-        function jump(i) { si = i; bi = -1; mode = 'title'; show(true) }
+        function jump(i) { si = i; bi = -1; mode = 'title'; hideChapter(); show(true) }
         function goVote() { mode = 'vote'; show(false) }
+
+        /* ---- CHAPTER CARD ---- */
+        function showChapter(title, sub, color, ms) {
+            const el = $('#chapter-card');
+            el.style.display = 'flex';
+            el.style.animation = '';
+            el.innerHTML = `<div class="ch-label">📖 Chapter</div><div class="ch-title" style="color:${color || '#fff'}">${title}</div><div class="ch-sub">${sub || ''}</div>`;
+            el.style.animation = 'chapterIn .4s ease forwards';
+            if (ms) setTimeout(() => { el.style.animation = 'chapterOut .4s ease forwards'; setTimeout(() => el.style.display = 'none', 420) }, ms);
+        }
+        function hideChapter() { const el = $('#chapter-card'); el.style.display = 'none'; el.style.animation = '' }
+
+        /* ---- REWIND EFFECT ---- */
+        function doRewind(onDone) {
+            const ov = $('#rewind-overlay');
+            ov.style.display = 'flex';
+            setTimeout(() => { ov.style.display = 'none'; onDone() }, 1800);
+        }
+
+        /* ---- CHOICE CARD ---- */
+        function showChoiceCard(question, optA, optB) {
+            const c = $('#card');
+            c.style.display = 'flex';
+            c.innerHTML = `
+                <div style="font-size:3.6rem">🤔</div>
+                <h1 style="font-size:2rem; color:#ffd23f; margin:12px 0 6px">${question}</h1>
+                <p style="color:#94a3b8; margin-bottom:28px; font-size:1rem">The story will show you both — watch Ending A first.</p>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+                    <div style="background:#3a1a1a; border:2px solid #ff4d4d; border-radius:14px; padding:16px 24px; min-width:180px; opacity:.85">
+                        <div style="font-size:1.5rem">❌</div>
+                        <div style="font-weight:800; color:#ff4d4d; margin-top:4px">Ending A</div>
+                        <div style="color:#fca5a5; font-size:0.9rem">${optA}</div>
+                    </div>
+                    <div style="background:#1a3a2a; border:2px solid #34d399; border-radius:14px; padding:16px 24px; min-width:180px; opacity:.85">
+                        <div style="font-size:1.5rem">✅</div>
+                        <div style="font-weight:800; color:#34d399; margin-top:4px">Ending B</div>
+                        <div style="color:#6ee7b7; font-size:0.9rem">${optB}</div>
+                    </div>
+                </div>
+            `;
+            $('#next').textContent = 'Watch Ending A →';
+        }
+
         function show(rebuild) {
-            nav(); const st = S[si];['#card', '#vote', '#bubble', '#narr', '#prop'].forEach(s => $(s).style.display = 'none'); spk = -1;
+            nav();
+            const st = S[si];
+            ['#card', '#vote', '#bubble', '#narr', '#prop'].forEach(s => $(s).style.display = 'none');
+            hideChapter();
+            spk = -1;
+
             if (mode === 'vote') { drawVote(); $('#vote').style.display = 'flex'; $('#next').style.display = $('#back').style.display = 'none'; return }
             $('#next').style.display = $('#back').style.display = '';
-            if (rebuild) { setStory(si); mood = 'calm'; for (let j = 0; j <= bi && j < st.b.length; j++) { apply(st.b[j][2], true); if (st.b[j][3]) mood = st.b[j][3] } }
-            camT.set(0, 2.9, 8.6); lookT.set(0, 1.9, 0);
-            if (bi === -1) { $('#card').innerHTML = `<div class="e">${st.e}</div><h1>Story ${si + 1}: ${st.t}</h1><div class="hook">${st.h}</div><small style="opacity:.6">${st.g} · ${st.i}</small>`; $('#card').style.display = 'flex'; $('#next').textContent = started ? 'Start story' : 'Click to start' }
-            else if (bi >= st.b.length) { $('#card').innerHTML = `<div class="e">${st.e}</div><p class="q">${st.q}</p>`; $('#card').style.display = 'flex'; $('#next').textContent = si < S.length - 1 ? 'Next story' : 'Go to voting' }
-            else {
-                const b = st.b[bi]; $('#next').textContent = 'Next';
-                if (b[3]) mood = b[3];
-                if (b[4]) { const p = $('#prop'); p.className = mood === 'alarm' ? 'bad' : ''; p.innerHTML = `<span class="pe">${b[4]}</span><span>${b[5]}</span>`; p.style.display = 'flex'; p.style.animation = 'none'; p.offsetHeight; p.style.animation = '' }
-                if (b[0] < 0) { $('#narr').textContent = b[1]; $('#narr').style.display = 'block' }
-                else {
-                    spk = b[0]; $('#bubble').innerHTML = `<b>${st.cast[spk][0]}</b>${b[1]}`; $('#bubble').style.display = 'block';
-                    const x = chars[spk].userData.tx; camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0)
+
+            if (rebuild) {
+                setStory(si); mood = 'calm';
+                for (let j = 0; j <= bi && j < st.b.length; j++) {
+                    const bj = st.b[j];
+                    if (bj[0] >= 0 || bj[0] === -1) apply(bj[2], true);
+                    if (bj[3] && bj[3] !== '' && bj[0] !== -3 && bj[0] !== -4) mood = bj[3];
                 }
             }
+            camT.set(0, 2.9, 8.6); lookT.set(0, 1.9, 0);
+
+            if (bi === -1) {
+                $('#card').innerHTML = `<div class="e">${st.e}</div><h1>Story ${si + 1}: ${st.t}</h1><div class="hook">${st.h}</div><small style="opacity:.6">${st.g} · ${st.i}</small>`;
+                $('#card').style.display = 'flex';
+                $('#next').textContent = started ? 'Start story' : 'Click to start';
+                return;
+            }
+
+            if (bi >= st.b.length) {
+                const qText = st.q.replace(/\n/g, '<br>');
+                $('#card').innerHTML = `<div class="e">${st.e}</div><p class="q">${qText}</p>`;
+                $('#card').style.display = 'flex';
+                $('#next').textContent = si < S.length - 1 ? 'Next story' : 'Go to voting';
+                return;
+            }
+
+            const b = st.b[bi];
+
+            /* ----- SPECIAL BEAT TYPES ----- */
+
+            // -2: "What would you do?" choice card
+            if (b[0] === -2) {
+                const [q, opts] = [b[1], b[2]];
+                const [optA, optB] = opts.split('. ');
+                showChoiceCard(q, optA.replace('Ending A: ', ''), optB.replace('Ending B: ', ''));
+                return;
+            }
+
+            // -3: chapter banner (title, sub, color)
+            if (b[0] === -3) {
+                showChapter(b[1], b[2], b[3], 0);
+                $('#narr').style.display = 'none';
+                $('#next').textContent = 'Next';
+                // Also clear prop
+                $('#prop').style.display = 'none';
+                return;
+            }
+
+            // -4: rewind beat — handled in next()
+            if (b[0] === -4) {
+                $('#narr').textContent = '⏪  Rewinding to the choice...';
+                $('#narr').style.display = 'block';
+                $('#next').textContent = 'Watch Ending B →';
+                return;
+            }
+
+            /* ----- NORMAL BEATS ----- */
+            $('#next').textContent = 'Next';
+            if (b[3] && b[3] !== '') mood = b[3];
+            if (b[4]) {
+                const p = $('#prop');
+                p.className = mood === 'alarm' ? 'bad' : '';
+                p.innerHTML = `<span class="pe">${b[4]}</span><span>${b[5]}</span>`;
+                p.style.display = 'flex'; p.style.animation = 'none'; p.offsetHeight; p.style.animation = '';
+            }
+            if (b[0] < 0) {
+                $('#narr').textContent = b[1]; $('#narr').style.display = 'block';
+            } else {
+                spk = b[0];
+                $('#bubble').innerHTML = `<b>${st.cast[spk][0]}</b>${b[1]}`;
+                $('#bubble').style.display = 'block';
+                const x = chars[spk].userData.tx; camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0);
+            }
         }
+
         function next() {
             startMusic(); started = true; const st = S[si];
-            if (mode === 'title') { mode = 'play'; bi = 0; show(true); apply(st.b[0][2]); return }
-            if (bi < st.b.length) { bi++; if (bi < st.b.length) apply(st.b[bi][2]); show(false) }
-            else if (si < S.length - 1) { si++; bi = -1; mode = 'title'; show(true) } else { mode = 'vote'; show(false) }
+
+            if (mode === 'title') { mode = 'play'; bi = 0; show(true); if (st.b[0][0] >= -1) apply(st.b[0][2]); return }
+
+            if (bi < st.b.length) {
+                const cur = st.b[bi];
+
+                // On -4 (rewind beat), trigger the rewind animation then jump back to the chapter-A label
+                if (cur[0] === -4) {
+                    doRewind(() => {
+                        // Find the index of Ending B chapter marker (-3 with "ENDING B")
+                        const endingBIdx = st.b.findIndex((x, i) => i > bi && x[0] === -3);
+                        if (endingBIdx >= 0) {
+                            bi = endingBIdx;
+                            apply(st.b[bi][2], true);
+                        } else {
+                            bi++;
+                        }
+                        mood = 'calm';
+                        show(false);
+                    });
+                    return;
+                }
+
+                bi++;
+                if (bi < st.b.length) {
+                    const nb = st.b[bi];
+                    if (nb[0] >= -1) apply(nb[2]);
+                }
+                show(false);
+                return;
+            }
+
+            if (si < S.length - 1) { si++; bi = -1; mode = 'title'; show(true) }
+            else { mode = 'vote'; show(false) }
         }
+
         function back() {
             if (mode === 'vote') { mode = 'play'; si = S.length - 1; bi = S[si].b.length; show(true); return }
-            if (bi > -1) { bi--; if (bi === -1) mode = 'title' } else if (si > 0) { si--; bi = S[si].b.length; mode = 'play' } show(true)
+            if (bi > -1) { bi--; if (bi === -1) mode = 'title' } else if (si > 0) { si--; bi = S[si].b.length; mode = 'play' }
+            show(true)
         }
         $('#next').onclick = next; $('#back').onclick = back;
 
