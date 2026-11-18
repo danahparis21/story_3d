@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stories in Code</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #12151f;
+            font-family: system-ui, sans-serif
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%
+        }
+
+        #top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 10px;
+            z-index: 5
+        }
+
+        .pill {
+            border: 0;
+            border-radius: 999px;
+            padding: 7px 13px;
+            font-weight: 700;
+            background: #fffe;
+            color: #223;
+            cursor: pointer
+        }
+
+        .pill.on {
+            background: #ffd23f
+        }
+
+        #bubble {
+            position: fixed;
+            z-index: 4;
+            max-width: min(300px, 70vw);
+            background: #fff;
+            color: #1b1b2b;
+            border-radius: 18px;
+            padding: 10px 14px;
+            font-size: 1.05rem;
+            line-height: 1.35;
+            box-shadow: 0 4px 0 #0005;
+            transform: translate(-50%, -100%);
+            display: none
+        }
+
+        #bubble b {
+            display: block;
+            font-size: .72rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: #5b6cff;
+            margin-bottom: 2px
+        }
+
+        #bubble:after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -10px;
+            margin-left: -8px;
+            border: 8px solid transparent;
+            border-top-color: #fff;
+            border-bottom: 0
+        }
+
+        #narr {
+            position: fixed;
+            left: 50%;
+            bottom: 92px;
+            transform: translateX(-50%);
+            z-index: 4;
+            width: min(640px, 92vw);
+            background: #000b;
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            text-align: center;
+            display: none
+        }
+
+        #prop {
+            position: fixed;
+            top: 64px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            width: min(380px, 88vw);
+            background: #0b1224f0;
+            color: #e6f0ff;
+            border: 2px solid #4f8cff;
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-family: ui-monospace, Menlo, monospace;
+            animation: pop .35s
+        }
+
+        #prop.bad {
+            border-color: #ff4d4d;
+            color: #ffd6d6
+        }
+
+        #prop .pe {
+            font-size: 2rem
+        }
+
+        @keyframes pop {
+            from {
+                transform: translateX(-50%) scale(.8);
+                opacity: 0
+            }
+        }
+
+        #next {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            z-index: 6;
+            font-size: 1.1rem;
+            padding: 13px 26px;
+            border: 0;
+            border-radius: 14px;
+            background: #ffd23f;
+            color: #221;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b88f00
+        }
+
+        #back {
+            position: fixed;
+            bottom: 22px;
+            left: 22px;
+            z-index: 6;
+            font-size: 1rem;
+            padding: 13px 20px;
+            border: 0;
+            border-radius: 14px;
+            background: #fffe;
+            color: #223;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        #card,
+        #vote {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 24px;
+            background: #0a0e1bdd;
+            color: #fff;
+            overflow: auto
+        }
+
+        #card .e {
+            font-size: 3.6rem
+        }
+
+        #card h1 {
+            margin: 6px 0;
+            font-size: 1.5rem;
+            opacity: .85
+        }
+
+        #card .hook {
+            max-width: 600px;
+            font-size: 1.7rem;
+            line-height: 1.35;
+            margin: 14px 0;
+            color: #ffd23f;
+            font-family: Georgia, serif;
+            font-style: italic
+        }
+
+        #card .q {
+            max-width: 600px;
+            color: #ffd23f;
+            font-style: italic;
+            font-size: 1.5rem;
+            line-height: 1.4;
+            font-family: Georgia, serif
+        }
+
+        #vote h2 {
+            margin: 0 0 4px;
+            font-size: 1.8rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 12px;
+            width: min(900px, 100%);
+            margin: 16px 0
+        }
+
+        .box {
+            position: relative;
+            background: #fff;
+            color: #1b1b2b;
+            border: 3px solid #fff;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            font: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 140px;
+            transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .box:hover {
+            transform: translateY(-2px);
+        }
+
+        .box.sel {
+            border-color: #34d399;
+            background: #e8fff5;
+            box-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
+        }
+
+        .box .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #34d399;
+            color: #064e3b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 999px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .box .e {
+            font-size: 2rem
+        }
+
+        .box small {
+            color: #667
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top"></div>
+    <div id="prop"></div>
+    <div id="bubble"></div>
+    <div id="narr"></div>
+    <div id="card"></div>
+    <div id="vote"></div>
+    <button id="back">Back</button><button id="next">Click to start</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        /* STORY DATA
+         cast: [name, shirt, hair, optional hat "type:color" (cap|beanie|hard|hood)]
+         beat: [speaker (-1 = narrator), line, actions "charIndex:pose,..", mood, propIcon, propText]
+         poses: desk shock sad cheer point phone shake idle, or x=NUMBER (walk there)
+         moods: calm dark alarm warm */
+        const S = [
+            {
+                t: "The Human Factor", g: "Cybersecurity thriller", i: "Social engineering and trust", e: "🏰", sky: "#2a3b66",
+                h: "This company spent millions to be impossible to hack. It still got robbed, and nobody broke in.",
+                cast: [["CEO Daniel", "#26325c", "#2b1b10"], ["Mia (new partner)", "#e0405a", "#6b3a1e"], ["Chief Ray (security)", "#3a3a3a", "#111", "cap:#1d3a8a"]],
+                b: [[-1, "Welcome to Titan Corp, the most secure company in the country. Firewalls, biometrics, armed guards.", "2:cheer", "calm", "🔒", "Security score: 100%"],
+                [2, "Drill complete. Nobody gets past me.", "0:point"],
+                [-1, "Then the CEO, Daniel, falls in love with Mia. And he starts to trust her a little too much.", "1:x=-1", "warm", "💘", "New relationship"],
+                [1, "Can I see your office? Just for a minute?"],
+                [0, "Of course. No badge scan needed. She's with me.", "0:point,2:shake", "calm", "🚪", "Verification: SKIPPED"],
+                [-1, "Small exceptions that nobody noticed. Until one morning...", "2:shock,0:shock", "alarm", "🚨", "CONFIDENTIAL FILES COPIED"],
+                [2, "Firewall: working. Cameras: working. The breach came through a trusted door.", "2:sad"],
+                [0, "She never loved me. She was sent to get inside.", "0:sad,1:x=8", "dark"]],
+                q: "The strongest firewall cannot protect you from the human who opens the door."
+            },
+            {
+                t: "The Creator's Responsibility", g: "Technology thriller", i: "Developer accountability and AI misuse", e: "🤖", sky: "#26334d",
+                h: "She built a program that makes its own decisions. Then a stranger gave it new orders.",
+                cast: [["Lia (developer)", "#2fa37a", "#222"], ["Investigator", "#555", "#8b6b3a"], ["Stranger", "#222", "#111", "hood:#1c1c28"]],
+                b: [[-1, "Lia is a brilliant developer. Her AI agent, ARIA, makes decisions on its own, without supervision.", "0:desk", "calm", "🤖", "ARIA online. 0 errors."],
+                [0, "It works faster than all of us. I'm so proud of it.", "0:cheer"],
+                [-1, "Months later, a stranger quietly rewrites ARIA's goals.", "2:desk,0:idle", "dark", "⚠️", "ARIA: creating 5,000 fake accounts..."],
+                [-1, "ARIA obeys. Innocent people lose their money.", "2:cheer", "alarm", "💸", "Victims reported: 312"],
+                [1, "People were hurt. Your program did this.", "2:x=8,1:point"],
+                [0, "I never designed it for that! It only follows instructions!", "0:shake", "dark"],
+                [1, "Then who is responsible for what it was instructed to do?", "0:sad"]],
+                q: "If you build the tool, can you say you are not responsible for how it is used?"
+            },
+            {
+                t: "The Replacement", g: "Workplace drama", i: "AI automation, layoffs, corporate responsibility", e: "🧑‍💼", sky: "#3a2f4d",
+                h: "The company replaced 40 people with one AI. Then the AI started making mistakes nobody could catch.",
+                cast: [["Manager Ben", "#7a3fb0", "#222"], ["Rosa (20 yrs here)", "#e08a2e", "#aaa"], ["Kai (junior)", "#2d86c9", "#3b2a1a", "beanie:#d94b3f"]],
+                b: [[-1, "At Brightline Co., Rosa has solved customer problems for 20 years. Today, management has big news.", "1:desk", "calm"],
+                [0, "We've bought an AI. It's faster and cheaper. Rosa, your whole team is let go.", "0:point", "", "📉", "Staff: 40 → 5"],
+                [1, "It can't handle the strange cases. We can.", "1:sad"],
+                [-1, "Rosa leaves. At first, profits soar and everyone celebrates.", "1:x=-9,0:cheer", "warm", "🎉", "Costs down 60%"],
+                [2, "The AI just refunded the wrong customers. Again. And nobody left knows how to fix it.", "2:shock", "alarm", "❌", "Refunds sent to 300 wrong accounts"],
+                [-1, "Customers leave. Losses grow. The one who could have prevented it watches the news at home.", "0:sad", "dark", "📰", "Brightline loses half its customers"],
+                [0, "We should never have let them go.", "0:sad"]],
+                q: "AI didn't take their jobs. Management decided they were no longer needed."
+            },
+            {
+                t: "Human Error", g: "Professional drama", i: "IT negligence and accountability", e: "💥", sky: "#4a2a30",
+                h: "Sam skipped one step to save twenty minutes. It cost the whole company.",
+                cast: [["Sam (IT)", "#d94b3f", "#222"], ["Boss Grace", "#444", "#6b3a1e"]],
+                b: [[-1, "Tonight, a huge update goes live at Nova Bank. Sam is the only one on the database.", "0:desk", "calm", "⏰", "Deadline: 6 PM"],
+                [1, "Finish it fast. We cannot be late.", "1:point"],
+                [0, "Testing and backups take hours... I'll skip them. What could go wrong?", "0:desk"],
+                [-1, "The update finishes. Everything looks perfect.", "0:cheer", "warm", "✅", "Update successful"],
+                [-1, "Then...", "0:shock,1:shock", "alarm", "💥", "SYSTEM CRASH: records unreachable"],
+                [1, "Where is the backup?!", "1:point"],
+                [0, "There isn't one. I thought I was saving time. I didn't realize I was putting everyone's work at risk.", "0:sad", "dark"]],
+                q: "One shortcut can create a problem that affects everyone."
+            },
+            {
+                t: "Silent Whistleblower", g: "Corporate thriller", i: "Data manipulation and integrity", e: "🤫", sky: "#2d3a4a",
+                h: "Noel found one number that was changed. Everyone around him already knew, and told him to stay quiet.",
+                cast: [["Noel (IT analyst)", "#1f8a70", "#222"], ["Supervisor Vera", "#333", "#555"], ["Ed (coworker)", "#8a6d1f", "#222", "cap:#8a2b2b"]],
+                b: [[-1, "Noel is checking the quarterly report at Orion Group. It looks great.", "0:desk", "calm", "📊", "Reported revenue: +40%"],
+                [-1, "But the raw data says something else.", "0:shock", "", "🔍", "Real revenue: +4%"],
+                [2, "Shh. Everyone knows. It makes us look better to clients.", "2:point"],
+                [0, "These false numbers go to real clients. We have to fix this.", "0:point"],
+                [1, "Sometimes protecting the company means knowing what not to reveal.", "1:point,2:shake", "dark"],
+                [0, "And sometimes doing the right thing means refusing to hide the truth.", "0:cheer", "calm", "📨", "Report sent to compliance"]],
+                q: "Professional integrity should never be compromised for profit."
+            },
+            {
+                t: "Forgotten Users", g: "Social drama", i: "Digital divide and accessibility", e: "♿", sky: "#2b4a40",
+                h: "The app launched perfectly. Thousands signed up. But the people who needed it most couldn't get in.",
+                cast: [["Paolo (developer)", "#3b82f6", "#222"], ["Lola Nena", "#c97bd0", "#ddd", "beanie:#8a5aa0"], ["Ana (resident)", "#e4a11b", "#111"]],
+                b: [[-1, "Paolo's team launches an app for public services. The whole team celebrates.", "0:cheer", "warm", "🎉", "10,000 signups"],
+                [0, "Perfect on every device! Mission accomplished.", "0:cheer"],
+                [-1, "At the municipal hall, Lola Nena tries to use it.", "1:phone", "calm", "📵", "Tiny text. Confusing menus."],
+                [1, "I can't read this, hijo. Who is this for?", "1:shake"],
+                [2, "My internet keeps dropping, and my screen reader can't read the buttons.", "2:shake", "dark", "📶", "No connection"],
+                [0, "But it works fine on our devices...", "0:sad"],
+                [2, "You said this was for everyone. Did you ever think of people like us?", "2:point", "dark"]],
+                q: "A system is only successful when everyone has a chance to use it."
+            },
+            {
+                t: "Copy/Paste", g: "Social drama", i: "Plagiarism, imposter syndrome, honesty", e: "📋", sky: "#4a4630",
+                h: "Jun's code was perfect. That was the problem: he never wrote it.",
+                cast: [["Jun (student)", "#e4572e", "#222"], ["Teacher Ms. Cruz", "#2e4057", "#777"], ["Mara (friend)", "#17a398", "#5a2d0c", "cap:#e0b020"]],
+                b: [[-1, "Jun is a computing student who feels slower than everyone else. The project is due tomorrow.", "0:desk,0:sad", "calm", "💻", "Lines of code written: 0"],
+                [0, "Ken's code is perfect. Nobody will check... right?", "0:desk", "", "📋", "Ctrl+C → Ctrl+V"],
+                [-1, "Demo day. The class applauds.", "0:cheer", "warm", "🏆", "Grade: 98"],
+                [1, "Impressive! Now explain how this function works.", "0:idle,1:point"],
+                [0, "Uhh... I... um...", "0:shock", "dark"],
+                [2, "Jun, struggling doesn't make you less capable. Honesty is worth more than praise.", "2:point"],
+                [0, "I copied it. I'm sorry. I'll learn it properly.", "0:sad", "calm"]],
+                q: "You don't have to know everything to become a good programmer. You just have to be honest enough to learn."
+            },
+            {
+                t: "Permission Granted", g: "Realistic drama", i: "Data privacy and informed consent (RA 10173)", e: "📱", sky: "#2b3358",
+                h: "Anna ticked one box. Now strangers are messaging everyone in her contact list.",
+                cast: [["Anna (borrower)", "#e88fb0", "#2b1b10"], ["Marco (developer)", "#2a9d8f", "#111"], ["Ms. Reyes (PM)", "#c44569", "#2b1b10"], ["Jay (senior dev)", "#555", "#442", "cap:#333"]],
+                b: [[-1, "Anna needs a quick loan. She fills in her details and taps Allow on every permission.", "0:desk", "calm", "📱", "Allow contacts ✔  Allow photos ✔"],
+                [0, "Done with registration. Nothing to worry about!", "0:cheer"],
+                [-1, "Weeks later, Anna's phone will not stop buzzing.", "0:phone", "alarm", "💬", "“Ate, bakit ka nasa listahan ng delinquent?”"],
+                [0, "I never gave them permission to message my family!", "0:sad,0:shock", "dark"],
+                [-1, "At the app company, Marco is asked to build that exact feature.", "1:desk,0:x=8", "calm", "🧑‍💻", "Add access: contacts, photos, SMS"],
+                [2, "Add contact access for reminders. Investors want collections up.", "2:point"],
+                [3, "It's in the terms and conditions. Every lending app does it.", "3:point"],
+                [1, "“Everyone does it” isn't a standard. It's an excuse. Let me propose an opt-in payslip upload instead.", "1:point", "warm", "📄", "Opt-in. Only necessary data."],
+                [2, "...Send me the draft.", "2:idle,1:cheer"]],
+                q: "Behind every permission screen is a person."
+            },
+            {
+                t: "The Name on the Patent", g: "Psychological drama", i: "Betrayal, intellectual property, true mastery", e: "⚙️", sky: "#3a3326",
+                h: "Victor took all credit and patented the machine alone. Leo made sure demo day would test if he really knew how to run it.",
+                cast: [["Leo (creator)", "#e07a2e", "#222"], ["Victor (claimant)", "#3b4a8a", "#2b1b10"], ["Audience / Dana", "#8a2b5a", "#555", "cap:#222"]],
+                b: [
+                    [-1, "For three years, Leo engineered every component of the machine, while Victor promised they would share the patent.", "0:desk,1:desk", "calm", "🛠️", "3 years of development"],
+                    [-1, "Instead, Victor filed the patent alone. Now, he has become successful and publicly recognized as the sole inventor.", "1:cheer,0:sad", "warm", "🏆", "Inventor of the Year: Victor"],
+                    [-1, "Tonight, Leo attends the grand presentation where Victor is showing off 'his' breakthrough to investors.", "0:x=-6,1:cheer,2:idle", "calm", "🎤", "Grand Demonstration"],
+                    [-1, "Leo knows exactly what he is doing: he secretly sabotaged an internal timing relay beforehand.", "0:desk,1:x=2", "dark", "🔧", "Component sabotaged"],
+                    [-1, "Leo deliberately creates a situation where Victor is expected to prove that he actually understands the machine he claims to have invented.", "0:idle,1:cheer", "calm", "🎯", "The test is prepared"],
+                    [1, "Welcome, investors! Behold my solitary genius—now let us initiate the sequence!", "1:point", "warm", "⚡", "Machine powered on"],
+                    [-1, "During the presentation, the machine suddenly malfunctions—sparks flash, gears grind, and the engine fails.", "1:shock,2:shock", "alarm", "💥", "CRITICAL MALFUNCTION"],
+                    [2, "Victor! It stalled! You're the inventor—fix it in front of the press right now!", "2:point,1:shock", "alarm"],
+                    [-1, "Victor tries to fix it in front of everyone, but he doesn't know how.", "1:desk", "dark", "❓", "Victor doesn't know how"],
+                    [1, "It's... just a minor anomaly! Let me... uh, which valve regulates the fuel line again?", "1:desk", "dark", "⚠️", "Scrambling for answers"],
+                    [-1, "He struggles, makes excuses, and eventually cannot continue as the audience murmurs in embarrassment.", "1:shake", "dark", "⏱️", "Unable to continue"],
+                    [1, "I... I can't fix it right now. The, uh, room temperature must have disrupted the magnetic sensor!", "1:sad", "dark"],
+                    [-1, "With Victor completely exposed, Leo calmly steps forward from the crowd.", "0:x=-1.5", "calm", "🚶", "Leo steps forward"],
+                    [0, "It's not the temperature. You don't know how to fix it because you never built it.", "0:point,1:shock", "calm", "💡", "The truth exposed"],
+                    [-1, "Leo reaches into the machine, reconnects the sabotaged timing relay, and the engine immediately purrs with flawless power.", "0:desk,2:cheer", "warm", "⚙️", "Machine restored instantly"],
+                    [2, "You fixed a total system failure in five seconds without opening a manual! Who are you?", "2:point,1:sad", "warm"],
+                    [0, "I'm Leo. I know exactly how the machine works because I was the one who created it.", "0:cheer,1:sad", "calm", "✨", "The true creator"]
+                ],
+                q: "You can steal a name on a patent, but you cannot fake the understanding to make it work."
+            }
+        ];
+        const $ = s => document.querySelector(s);
+
+        /* ---- THREE.JS OFFICE ---- */
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight); document.body.prepend(renderer.domElement);
+        const scene = new THREE.Scene(); scene.background = new THREE.Color(0x12151f); scene.fog = new THREE.Fog(0x12151f, 16, 40);
+        const cam = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 80); cam.position.set(0, 2.9, 8.6);
+        const amb = new THREE.AmbientLight(0xffffff, .4); scene.add(amb);
+        const lamps = [-4.5, 4.5].map(x => { const l = new THREE.PointLight(0xffe2b8, .75, 22); l.position.set(x, 4.8, 1); scene.add(l); return l });
+        const mat = c => new THREE.MeshLambertMaterial({ color: c });
+        const box = (w, h, d, c, x, y, z, p) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); (p || scene).add(m); return m };
+        box(26, .2, 16, 0x5b5f6e, 0, -.1, 0); box(26, 6.5, .3, 0xb9bfcc, 0, 3.1, -5); box(.3, 6.5, 16, 0xa9afbc, -11, 3.1, 0); box(.3, 6.5, 16, 0xa9afbc, 11, 3.1, 0);
+        box(26, .3, 16, 0x2a2d38, 0, 6.4, 0);
+        const win = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.6), new THREE.MeshBasicMaterial({ color: 0x2a3b66 })); win.position.set(-6.5, 3.3, -4.82); scene.add(win);
+        box(5.3, .15, .2, 0x2a2d38, -6.5, 4.65, -4.8); box(5.3, .15, .2, 0x2a2d38, -6.5, 1.95, -4.8); box(.15, 2.8, .2, 0x2a2d38, -6.5, 3.3, -4.8);
+        box(3.4, 2, .1, 0xf2f2f2, 6.5, 3.3, -4.8); box(3.6, 2.2, .06, 0x555a66, 6.5, 3.3, -4.85);
+        [-5, 5].forEach(x => { const p = box(1.6, .04, .5, 0xfff4d6, x, 6.2, 0); p.material = new THREE.MeshBasicMaterial({ color: 0xfff4d6 }) });
+        function plant(x, z) { box(.6, .5, .6, 0x7a4f2a, x, .25, z); const l = new THREE.Mesh(new THREE.IcosahedronGeometry(.7, 0), mat(0x3f8f4f)); l.position.set(x, 1.1, z); scene.add(l) }
+        plant(-9.5, -3.5); plant(9.5, -3.5); plant(9, 2);
+        let chars = [], desks = null, deskScreens = [];
+        function faceTex() { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); g.fillStyle = '#ffd9b3'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#222'; g.fillRect(18, 22, 8, 10); g.fillRect(38, 22, 8, 10); g.fillRect(22, 44, 20, 4); g.fillRect(20, 42, 4, 4); g.fillRect(40, 42, 4, 4); return new THREE.CanvasTexture(c) }
+        const FT = faceTex(), SK = 0xffd9b3;
+        function makeChar(shirt, hair, hat) {
+            const g = new THREE.Group();
+            const legs = [-1, 1].map(s => { const p = new THREE.Group(); p.position.set(s * .25, .8, 0); box(.45, .8, .45, 0x34495e, 0, -.4, 0, p); g.add(p); return p });
+            box(1, 1, .55, shirt, 0, 1.3, 0, g);
+            const arms = [-1, 1].map(s => { const p = new THREE.Group(); p.position.set(s * .75, 1.7, 0); box(.4, .9, .4, shirt, 0, -.4, 0, p); box(.38, .2, .38, SK, 0, -.9, 0, p); g.add(p); return p });
+            const head = new THREE.Group(); head.position.y = 2.2; g.add(head);
+            const hm = new THREE.Mesh(new THREE.BoxGeometry(.75, .75, .75), [mat(SK), mat(SK), mat(hair), mat(SK), new THREE.MeshLambertMaterial({ map: FT }), mat(SK)]); head.add(hm);
+            box(.8, .2, .8, hair, 0, .4, 0, head);
+            if (hat) {
+                const [ty, col] = hat.split(':');
+                if (ty === 'cap') { box(.82, .22, .82, col, 0, .52, 0, head); box(.8, .06, .4, col, 0, .45, .55, head) }
+                else if (ty === 'beanie') { box(.85, .32, .85, col, 0, .52, 0, head); box(.2, .2, .2, 0xffffff, 0, .75, 0, head) }
+                else if (ty === 'hood') { box(.9, .5, .9, col, 0, .42, -.05, head) }
+                else box(.88, .3, .88, col, 0, .55, 0, head)
+            }
+            g.userData = { legs, arms, head }; return g
+        }
+        function clearScene() { chars.forEach(c => scene.remove(c)); chars = []; if (desks) scene.remove(desks); desks = new THREE.Group(); scene.add(desks); deskScreens = [] }
+        function setStory(i) {
+            clearScene(); const st = S[i]; win.material.color.set(st.sky); const n = st.cast.length;
+            st.cast.forEach((c, k) => {
+                const hx = (k - (n - 1) / 2) * 2.9, ch = makeChar(c[1], c[2], c[3]); ch.position.set(hx, 0, .5);
+                Object.assign(ch.userData, { hx, tx: hx, tz: .5, ry: 0, pose: 'idle', pt: 0, ph: Math.random() * 6, k }); scene.add(ch); chars.push(ch);
+                box(2.2, .12, 1.1, 0x8b6a43, hx, 1, -2, desks); box(.12, 1, 1, 0x6b5030, hx - 1, .5, -2, desks); box(.12, 1, 1, 0x6b5030, hx + 1, .5, -2, desks);
+                box(.9, .6, .08, 0x111, hx, 1.5, -2.3, desks); const sc = new THREE.Mesh(new THREE.PlaneGeometry(.8, .5), new THREE.MeshBasicMaterial({ color: 0x6fa8ff })); sc.position.set(hx, 1.5, -2.25); desks.add(sc); deskScreens.push(sc)
+            })
+        }
+        function apply(a, snap) {
+            if (!a) return; a.split(',').forEach(p => {
+                const [i, v] = p.split(':'), c = chars[+i]; if (!c) return; const u = c.userData;
+                if (v.startsWith('x=')) { u.tx = +v.slice(2); u.tz = .5; u.ry = 0; u.pose = 'idle' }
+                else { u.pose = v; u.pt = now; if (v === 'desk') { u.tx = u.hx; u.tz = -1; u.ry = Math.PI } else { u.tz = .5; u.ry = 0 } }
+                if (snap) { c.position.x = u.tx; c.position.z = u.tz; c.rotation.y = u.ry }
+            })
+        }
+
+        /* ---- FLOW ---- */
+        let si = 0, bi = -1, mode = 'title', spk = -1, picked = [], now = 0, mood = 'calm', started = false;
+        const camT = new THREE.Vector3(0, 2.9, 8.6), look = new THREE.Vector3(0, 1.9, 0), lookT = new THREE.Vector3(0, 1.9, 0);
+        function nav() { $('#top').innerHTML = S.map((s, i) => `<button class="pill ${mode !== 'vote' && i === si ? 'on' : ''}" onclick="jump(${i})">${i + 1}</button>`).join('') + `<button class="pill ${mode === 'vote' ? 'on' : ''}" onclick="goVote()">Vote</button><button class="pill" onclick="toggleMusic()">${musicOn ? '🔊' : '🔇'}</button>` }
+        function jump(i) { si = i; bi = -1; mode = 'title'; show(true) }
+        function goVote() { mode = 'vote'; show(false) }
+        function show(rebuild) {
+            nav(); const st = S[si];['#card', '#vote', '#bubble', '#narr', '#prop'].forEach(s => $(s).style.display = 'none'); spk = -1;
+            if (mode === 'vote') { drawVote(); $('#vote').style.display = 'flex'; $('#next').style.display = $('#back').style.display = 'none'; return }
+            $('#next').style.display = $('#back').style.display = '';
+            if (rebuild) { setStory(si); mood = 'calm'; for (let j = 0; j <= bi && j < st.b.length; j++) { apply(st.b[j][2], true); if (st.b[j][3]) mood = st.b[j][3] } }
+            camT.set(0, 2.9, 8.6); lookT.set(0, 1.9, 0);
+            if (bi === -1) { $('#card').innerHTML = `<div class="e">${st.e}</div><h1>Story ${si + 1}: ${st.t}</h1><div class="hook">${st.h}</div><small style="opacity:.6">${st.g} · ${st.i}</small>`; $('#card').style.display = 'flex'; $('#next').textContent = started ? 'Start story' : 'Click to start' }
+            else if (bi >= st.b.length) { $('#card').innerHTML = `<div class="e">${st.e}</div><p class="q">${st.q}</p>`; $('#card').style.display = 'flex'; $('#next').textContent = si < S.length - 1 ? 'Next story' : 'Go to voting' }
+            else {
+                const b = st.b[bi]; $('#next').textContent = 'Next';
+                if (b[3]) mood = b[3];
+                if (b[4]) { const p = $('#prop'); p.className = mood === 'alarm' ? 'bad' : ''; p.innerHTML = `<span class="pe">${b[4]}</span><span>${b[5]}</span>`; p.style.display = 'flex'; p.style.animation = 'none'; p.offsetHeight; p.style.animation = '' }
+                if (b[0] < 0) { $('#narr').textContent = b[1]; $('#narr').style.display = 'block' }
+                else {
+                    spk = b[0]; $('#bubble').innerHTML = `<b>${st.cast[spk][0]}</b>${b[1]}`; $('#bubble').style.display = 'block';
+                    const x = chars[spk].userData.tx; camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0)
+                }
+            }
+        }
+        function next() {
+            startMusic(); started = true; const st = S[si];
+            if (mode === 'title') { mode = 'play'; bi = 0; show(true); apply(st.b[0][2]); return }
+            if (bi < st.b.length) { bi++; if (bi < st.b.length) apply(st.b[bi][2]); show(false) }
+            else if (si < S.length - 1) { si++; bi = -1; mode = 'title'; show(true) } else { mode = 'vote'; show(false) }
+        }
+        function back() {
+            if (mode === 'vote') { mode = 'play'; si = S.length - 1; bi = S[si].b.length; show(true); return }
+            if (bi > -1) { bi--; if (bi === -1) mode = 'title' } else if (si > 0) { si--; bi = S[si].b.length; mode = 'play' } show(true)
+        }
+        $('#next').onclick = next; $('#back').onclick = back;
+
+        /* ---- SUPABASE CONFIGURATION ---- */
+        // Replace with your project details from Supabase Dashboard > Project Settings > API
+        const SUPABASE_URL = '';
+        const SUPABASE_ANON_KEY = '';
+
+        let sbClient = null;
+        try {
+            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_')) {
+                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.warn('Supabase initialization failed:', e);
+        }
+
+        /* ---- VOTE ---- */
+        let liveScores = null;
+
+        async function getVoteScores() {
+            if (!sbClient) return null;
+            try {
+                const { data, error } = await sbClient.from('votes').select('story_index');
+                if (error) throw error;
+                const counts = {};
+                for (let i = 0; i < S.length; i++) counts[i] = 0;
+                data.forEach(r => {
+                    if (counts[r.story_index] !== undefined) counts[r.story_index]++;
+                });
+                return counts;
+            } catch (e) {
+                console.warn('Could not fetch scores:', e);
+                return null;
+            }
+        }
+
+        function getStoredVotes() {
+            const raw = localStorage.getItem('voted_stories') || localStorage.getItem('voted_story');
+            if (!raw) return null;
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [+parsed];
+            } catch {
+                return [+raw];
+            }
+        }
+
+        async function drawVote() {
+            const stored = getStoredVotes();
+            if (stored && stored.length > 0) {
+                const cards = stored.map(idx => S[idx]).filter(Boolean).map(v => `
+                    <div style="background:#182236; border:1px solid #3b82f6; border-radius:12px; padding:12px 18px; text-align:left; min-width:210px; display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:2rem">${v.e}</span>
+                        <div>
+                            <div style="font-weight:700; color:#fff">${v.t}</div>
+                            <div style="font-size:0.8rem; color:#94a3b8">${v.g}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                let scoresHtml = '';
+                if (liveScores) {
+                    const sortedIndices = [...Array(S.length).keys()].sort((a, b) => (liveScores[b] || 0) - (liveScores[a] || 0));
+                    scoresHtml = `
+                        <div style="margin-top:24px; width:min(620px, 94vw); background:#0f172a; border-radius:14px; padding:18px; border:1px solid #1e293b; text-align:left;">
+                            <h3 style="margin:0 0 12px; font-size:1.1rem; color:#ffd23f; text-align:center;">📊 Live Standings (${Object.values(liveScores).reduce((a,b)=>a+b,0)} total votes)</h3>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                ${sortedIndices.map((idx, rank) => {
+                                    const s = S[idx], count = liveScores[idx] || 0;
+                                    return `
+                                        <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.9rem; padding:8px 12px; background:#1e293b; border-radius:8px;">
+                                            <span><b>#${rank+1}</b> ${s.e} ${s.t}</span>
+                                            <span style="font-weight:700; color:#34d399; background:#064e3b; padding:2px 10px; border-radius:999px;">${count} vote${count === 1 ? '' : 's'}</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                $('#vote').innerHTML = `
+                    <div style="font-size:3.5rem">🎉</div>
+                    <h2 style="margin:8px 0 4px">Thanks for voting!</h2>
+                    <p style="color:#cbd5e1; margin-bottom:16px">You cast your vote for ${stored.length} stor${stored.length === 1 ? 'y' : 'ies'}:</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width:850px; margin-bottom:20px">
+                        ${cards}
+                    </div>
+                    ${scoresHtml}
+                    <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+                        <button class="pill" onclick="resetVote()" style="background:#334155; color:#fff">Change my vote</button>
+                        <button class="pill on" onclick="jump(0)">Replay stories</button>
+                    </div>
+                `;
+
+                if (sbClient && !liveScores) {
+                    getVoteScores().then(sc => {
+                        if (sc) {
+                            liveScores = sc;
+                            drawVote();
+                        }
+                    });
+                }
+                return;
+            }
+
+            $('#vote').innerHTML = `
+                <h2>Which stories did you like best?</h2>
+                <p style="color:#cbd5e1; margin:4px 0 12px">Pick <b>up to 3</b> stories (<b>${picked.length} / 3 selected</b>), then lock in your vote.</p>
+                <div class="grid">
+                    ${S.map((s, i) => {
+                        const isSel = picked.includes(i);
+                        const selOrder = picked.indexOf(i) + 1;
+                        return `
+                            <button class="box ${isSel ? 'sel' : ''}" onclick="pick(${i})">
+                                ${isSel ? `<span class="badge">✓ #${selOrder}</span>` : ''}
+                                <span class="e">${s.e}</span>
+                                <b>${s.t}</b>
+                                <small>${s.i}</small>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+                <button class="pill" style="padding:13px 28px;font-size:1.05rem;background:#ffd23f;color:#1e293b" onclick="submit()" ${picked.length === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed"' : ''}>
+                    Lock in my vote${picked.length > 1 ? `s (${picked.length})` : picked.length === 1 ? ' (1)' : ''}
+                </button>
+                <p id="msg" style="min-height:22px; font-weight:600; margin-top:8px;"></p>
+            `;
+        }
+
+        function pick(i) {
+            const idx = picked.indexOf(i);
+            const msg = $('#msg');
+            if (idx >= 0) {
+                picked.splice(idx, 1);
+                if (msg) msg.textContent = '';
+            } else {
+                if (picked.length >= 3) {
+                    if (msg) {
+                        msg.textContent = 'You can select up to 3 stories maximum. Deselect one to choose another.';
+                        msg.style.color = '#ffd23f';
+                    }
+                    return;
+                }
+                picked.push(i);
+                if (msg) msg.textContent = '';
+            }
+            drawVote();
+        }
+
+        async function saveVote(indices) {
+            if (sbClient) {
+                let voterId = localStorage.getItem('voter_uuid');
+                if (!voterId) {
+                    voterId = 'voter_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    localStorage.setItem('voter_uuid', voterId);
+                }
+                const rows = indices.map(i => ({
+                    story_index: i,
+                    story_title: S[i].t,
+                    voter_id: voterId
+                }));
+                const { error } = await sbClient.from('votes').insert(rows);
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
+            } else {
+                console.log('Supabase credentials not configured yet. Saving vote locally:', indices.map(i => S[i].t));
+            }
+        }
+
+        async function submit() {
+            if (picked.length === 0) return;
+            const btn = $('#vote button.pill');
+            if (btn) btn.textContent = 'Saving votes...';
+            try {
+                await saveVote(picked);
+                localStorage.setItem('voted_stories', JSON.stringify(picked));
+                if (sbClient) {
+                    liveScores = await getVoteScores();
+                }
+                drawVote();
+            } catch (e) {
+                const msg = $('#msg');
+                if (msg) msg.textContent = 'Could not sync to cloud database, saving locally...';
+                localStorage.setItem('voted_stories', JSON.stringify(picked));
+                setTimeout(() => drawVote(), 1200);
+            }
+        }
+
+        function resetVote() {
+            localStorage.removeItem('voted_stories');
+            localStorage.removeItem('voted_story');
+            picked = [];
+            liveScores = null;
+            drawVote();
+        }
+
+        /* ---- MUSIC (generated in browser, no files) ---- */
+        let ac, mg, musicOn = true, step = 0, t0 = 0;
+        function startMusic() {
+            if (ac) { ac.resume(); return }
+            ac = new (window.AudioContext || window.webkitAudioContext)(); mg = ac.createGain(); mg.gain.value = .12; mg.connect(ac.destination); t0 = ac.currentTime + .1;
+            const ch = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]], pat = [0, 1, 2, 1, 2, 1, 0, 2];
+            const tone = (f, t, d, ty, v) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = ty; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .03); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g); g.connect(mg); o.start(t); o.stop(t + d + .05) };
+            setInterval(() => { while (t0 < ac.currentTime + 1) { const c = ch[Math.floor(step / 8) % 4], k = step % 8; tone(c[pat[k]] * 2, t0, .7, 'triangle', .5); if (k === 0) c.forEach(f => tone(f, t0, 3.6, 'sine', .35)); step++; t0 += .45 } }, 250)
+        }
+        function toggleMusic() { startMusic(); musicOn = !musicOn; mg.gain.value = musicOn ? .12 : 0; nav() }
+
+        /* ---- ANIMATION ---- */
+        const v3 = new THREE.Vector3(), MOOD = { calm: [.4, .75, 0xffe2b8], dark: [.12, .28, 0x8899cc], alarm: [.25, .5, 0xff3030], warm: [.5, 1, 0xffc27a] };
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        (function loop(t) {
+            requestAnimationFrame(loop); t /= 1000; now = t;
+            camT.x += Math.sin(t * .3) * .004; cam.position.lerp(camT, .035); look.lerp(lookT, .05); cam.lookAt(look);
+            const m = MOOD[mood] || MOOD.calm, fl = mood === 'alarm' ? .5 + .5 * Math.abs(Math.sin(t * 6)) : 1;
+            amb.intensity += (m[0] - amb.intensity) * .05; lamps.forEach(l => { l.intensity += (m[1] * fl - l.intensity) * .15; l.color.lerp(new THREE.Color(m[2]), .05) });
+            deskScreens.forEach(s => s.material.color.set(mood === 'alarm' ? 0xff5555 : mood === 'dark' ? 0x2a3b66 : 0x6fa8ff));
+            chars.forEach(c => {
+                const u = c.userData, dx = u.tx - c.position.x, dz = u.tz - c.position.z, d = Math.hypot(dx, dz), walking = d > .1;
+                if (walking) { c.position.x += dx / d * Math.min(.06, d); c.position.z += dz / d * Math.min(.06, d) }
+                const ry = walking ? Math.atan2(dx, dz) : u.ry; c.rotation.y += wrap(ry - c.rotation.y) * .12;
+                const [L, R] = u.legs, [A, B] = u.arms, H = u.head, talk = u.k === spk, jt = t - u.pt, p = u.pose;
+                let y = 0; L.rotation.x = R.rotation.x = A.rotation.x = B.rotation.x = 0; A.rotation.z = -.06; B.rotation.z = .06; H.rotation.set(0, 0, 0); c.rotation.x = 0;
+                if (walking) { const s = Math.sin(t * 10) * .7; L.rotation.x = s; R.rotation.x = -s; A.rotation.x = -s * .7; B.rotation.x = s * .7; y = Math.abs(Math.sin(t * 10)) * .05 }
+                else {
+                    y = Math.sin(t * 1.5 + u.ph) * .015; A.rotation.z = -.06 - Math.sin(t * 1.3 + u.ph) * .05; B.rotation.z = .06 + Math.sin(t * 1.3 + u.ph) * .05; H.rotation.y = Math.sin(t * .6 + u.ph) * .15;
+                    if (p === 'desk') { A.rotation.x = -1.3 + Math.sin(t * 14 + u.ph) * .1; B.rotation.x = -1.3 + Math.sin(t * 14 + u.ph + 2) * .1; H.rotation.x = .15 }
+                    else if (p === 'shock') { const e = Math.min(jt, .5); y = Math.sin(e * Math.PI / .5) * .6; A.rotation.z = -2.5; B.rotation.z = 2.5; H.rotation.x = -.2 }
+                    else if (p === 'sad') { H.rotation.x = .6; c.rotation.x = .1 }
+                    else if (p === 'cheer') { y = Math.abs(Math.sin(t * 6)) * .3; A.rotation.z = -2.5 - Math.sin(t * 9) * .3; B.rotation.z = 2.5 + Math.sin(t * 9) * .3 }
+                    else if (p === 'point') { B.rotation.x = -1.5; B.rotation.z = .15; H.rotation.y = -.2 }
+                    else if (p === 'phone') { B.rotation.x = -2.4; H.rotation.x = .3 }
+                    else if (p === 'shake') { H.rotation.y = Math.sin(t * 10) * .5 }
+                    if (talk && p !== 'desk') {
+                        const gi = (bi + u.k) % 3; y += Math.abs(Math.sin(t * 5)) * .04;
+                        if (gi === 0 && p === 'idle') { B.rotation.x = -.7 + Math.sin(t * 5) * .4 }
+                        else if (gi === 1 && p === 'idle') { A.rotation.z = -.7 - Math.sin(t * 4) * .3; B.rotation.z = .7 + Math.sin(t * 4) * .3 }
+                        else if (p === 'idle') { A.rotation.x = -1 + Math.sin(t * 6) * .3; H.rotation.x = Math.sin(t * 5) * .12 }
+                    }
+                }
+                c.position.y = y
+            });
+            if (spk >= 0 && chars[spk]) {
+                const c = chars[spk]; v3.set(c.position.x, 3.4, c.position.z).project(cam); const b = $('#bubble');
+                b.style.left = Math.min(Math.max((v3.x * .5 + .5) * innerWidth, 150), innerWidth - 150) + 'px'; b.style.top = Math.max((-v3.y * .5 + .5) * innerHeight, 130) + 'px'
+            }
+            renderer.render(scene, cam)
+        })(0);
+        addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() });
+        setStory(0); show(false);
+    </script>
+</body>
+
+</html>
