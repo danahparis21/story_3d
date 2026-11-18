@@ -33,20 +33,33 @@
             right: 0;
             display: flex;
             gap: 6px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
             align-items: center;
-            padding: 10px;
-            z-index: 5
+            padding: 8px 12px;
+            z-index: 15;
+            background: linear-gradient(180deg, rgba(10,14,27,0.88) 0%, rgba(10,14,27,0) 100%);
+            scrollbar-width: none;
+        }
+
+        #top::-webkit-scrollbar {
+            display: none;
         }
 
         .pill {
+            flex-shrink: 0;
+            white-space: nowrap;
             border: 0;
             border-radius: 999px;
-            padding: 7px 13px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
             font-weight: 700;
             background: #fffe;
             color: #223;
-            cursor: pointer
+            cursor: pointer;
+            touch-action: manipulation;
         }
 
         .pill.on {
@@ -55,17 +68,19 @@
 
         #bubble {
             position: fixed;
-            z-index: 4;
-            max-width: min(300px, 70vw);
+            z-index: 8;
+            max-width: min(320px, 86vw);
             background: #fff;
             color: #1b1b2b;
             border-radius: 18px;
             padding: 10px 14px;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
             line-height: 1.35;
-            box-shadow: 0 4px 0 #0005;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
             transform: translate(-50%, -100%);
-            display: none
+            display: none;
+            pointer-events: none;
+            transition: left .08s ease, top .08s ease;
         }
 
         #bubble b {
@@ -80,12 +95,12 @@
         #bubble:after {
             content: "";
             position: absolute;
-            left: 50%;
+            left: var(--tail-x, 50%);
             bottom: -10px;
             margin-left: -8px;
             border: 8px solid transparent;
             border-top-color: #fff;
-            border-bottom: 0
+            border-bottom: 0;
         }
 
         #narr {
@@ -93,29 +108,29 @@
             left: 50%;
             bottom: 92px;
             transform: translateX(-50%);
-            z-index: 4;
+            z-index: 5;
             width: min(640px, 92vw);
             background: #000b;
             color: #fff;
             border-radius: 14px;
             padding: 14px 18px;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             text-align: center;
             display: none
         }
 
         #prop {
             position: fixed;
-            top: 64px;
+            top: 56px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 4;
+            z-index: 5;
             width: min(380px, 88vw);
             background: #0b1224f0;
             color: #e6f0ff;
             border: 2px solid #4f8cff;
             border-radius: 14px;
-            padding: 12px 16px;
+            padding: 11px 15px;
             display: none;
             align-items: center;
             gap: 12px;
@@ -438,6 +453,117 @@
         .standings-row.is-winner .standings-score {
             color: #1e1e0a;
             background: #ffd23f;
+        }
+
+        /* ---- MOBILE OPTIMIZATION ---- */
+        @media (max-width: 640px) {
+            #prop {
+                top: 48px;
+                width: min(340px, 92vw);
+                padding: 7px 11px;
+                font-size: 0.82rem;
+                gap: 8px;
+                border-radius: 10px;
+            }
+            #prop .pe {
+                font-size: 1.4rem;
+            }
+            #bubble {
+                max-width: min(290px, 86vw);
+                padding: 8px 12px;
+                font-size: 0.92rem;
+                border-radius: 14px;
+            }
+            #bubble b {
+                font-size: 0.68rem;
+            }
+            #narr {
+                bottom: 74px;
+                padding: 10px 14px;
+                font-size: 0.92rem;
+                width: min(92vw, 460px);
+                border-radius: 12px;
+            }
+            #next {
+                bottom: 14px;
+                right: 14px;
+                padding: 10px 18px;
+                font-size: 0.95rem;
+                border-radius: 12px;
+            }
+            #back {
+                bottom: 14px;
+                left: 14px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+                border-radius: 12px;
+            }
+            #card, #vote {
+                padding: 55px 12px 85px;
+            }
+            #card h1 {
+                font-size: 1.35rem;
+            }
+            #card .hook {
+                font-size: 1.25rem;
+                margin: 10px 0;
+            }
+            #card .q {
+                font-size: 1.15rem;
+            }
+            #vote h2 {
+                font-size: 1.35rem;
+            }
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin: 12px 0;
+            }
+            .box {
+                padding: 10px 8px;
+                min-height: 110px;
+                border-radius: 12px;
+            }
+            .box .e {
+                font-size: 1.5rem;
+            }
+            .box b {
+                font-size: 0.82rem;
+                line-height: 1.2;
+            }
+            .box small {
+                font-size: 0.68rem;
+                line-height: 1.2;
+            }
+            .box .badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+                top: 5px;
+                right: 5px;
+            }
+            .winner-banner {
+                padding: 16px 12px;
+                border-radius: 14px;
+                margin: 12px 0;
+            }
+            .winner-banner h3 {
+                font-size: 1.25rem !important;
+            }
+            .standings-box {
+                padding: 12px 10px;
+                border-radius: 12px;
+            }
+            .standings-row {
+                padding: 7px 10px;
+                font-size: 0.8rem;
+            }
+            .standings-score {
+                font-size: 0.72rem;
+                padding: 2px 6px;
+            }
+            #chapter-card .ch-title {
+                font-size: 1.7rem;
+            }
         }
     </style>
 </head>
@@ -840,7 +966,10 @@
                     if (bj[3] && bj[3] !== '' && bj[0] !== -3 && bj[0] !== -4) mood = bj[3];
                 }
             }
-            camT.set(0, 2.9, 8.6); lookT.set(0, 1.9, 0);
+            const isMobile = innerWidth < innerHeight;
+            const baseZ = isMobile ? 11.2 : 8.6;
+            const baseY = isMobile ? 2.6 : 2.9;
+            camT.set(0, baseY, baseZ); lookT.set(0, 1.9, 0);
 
             if (bi === -1) {
                 $('#card').innerHTML = `<div class="e">${st.e}</div><h1>Story ${si + 1}: ${st.t}</h1><div class="hook">${st.h}</div><small style="opacity:.6">${st.g} · ${st.i}</small>`;
@@ -902,7 +1031,12 @@
                 spk = b[0];
                 $('#bubble').innerHTML = `<b>${st.cast[spk][0]}</b>${b[1]}`;
                 $('#bubble').style.display = 'block';
-                const x = chars[spk].userData.tx; camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0);
+                const x = chars[spk].userData.tx;
+                if (isMobile) {
+                    camT.set(x * 0.45, 2.3, 9.4); lookT.set(x * 0.4, 1.8, 0);
+                } else {
+                    camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0);
+                }
             }
         }
 
@@ -1300,12 +1434,37 @@
                 c.position.y = y
             });
             if (spk >= 0 && chars[spk]) {
-                const c = chars[spk]; v3.set(c.position.x, 3.4, c.position.z).project(cam); const b = $('#bubble');
-                b.style.left = Math.min(Math.max((v3.x * .5 + .5) * innerWidth, 150), innerWidth - 150) + 'px'; b.style.top = Math.max((-v3.y * .5 + .5) * innerHeight, 130) + 'px'
+                const c = chars[spk];
+                v3.set(c.position.x, 3.4, c.position.z).project(cam);
+                const b = $('#bubble');
+                const bw = b.offsetWidth || 240;
+                const bh = b.offsetHeight || 80;
+                const propVisible = $('#prop').style.display === 'flex';
+                const safeTop = (propVisible ? (innerWidth < 640 ? 104 : 120) : (innerWidth < 640 ? 46 : 56)) + bh + 14;
+
+                const headX = (v3.x * .5 + .5) * innerWidth;
+                const minX = bw / 2 + 10;
+                const maxX = innerWidth - bw / 2 - 10;
+                const bubbleX = Math.min(Math.max(headX, minX), maxX);
+                const bubbleY = Math.max((-v3.y * .5 + .5) * innerHeight, safeTop);
+
+                b.style.left = bubbleX + 'px';
+                b.style.top = bubbleY + 'px';
+
+                const tailX = Math.min(Math.max(headX - (bubbleX - bw / 2), 16), bw - 16);
+                b.style.setProperty('--tail-x', tailX + 'px');
             }
             renderer.render(scene, cam)
         })(0);
-        addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() });
+        function updateCam() {
+            const isMobile = innerWidth < innerHeight;
+            cam.aspect = innerWidth / innerHeight;
+            cam.fov = isMobile ? 62 : 50;
+            cam.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        }
+        addEventListener('resize', updateCam);
+        updateCam();
         setStory(0); show(false);
     </script>
 </body>
