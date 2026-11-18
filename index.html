@@ -143,7 +143,7 @@
             position: fixed;
             bottom: 22px;
             right: 22px;
-            z-index: 6;
+            z-index: 25;
             font-size: 1.1rem;
             padding: 13px 26px;
             border: 0;
@@ -159,7 +159,7 @@
             position: fixed;
             bottom: 22px;
             left: 22px;
-            z-index: 6;
+            z-index: 25;
             font-size: 1rem;
             padding: 13px 20px;
             border: 0;
@@ -280,14 +280,15 @@
         #chapter-card {
             position: fixed;
             inset: 0;
-            z-index: 7;
+            z-index: 12;
             display: none;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             text-align: center;
             padding: 24px;
-            background: #000c;
+            background: rgba(10, 14, 27, 0.72);
+            backdrop-filter: blur(4px);
             color: #fff;
             pointer-events: none;
         }
@@ -581,19 +582,40 @@
                 q: "You don't have to know everything to become a good programmer. You just have to be honest enough to learn."
             },
             {
-                t: "Permission Granted", g: "Realistic drama", i: "Data privacy and informed consent (RA 10173)", e: "📱", sky: "#2b3358",
-                h: "Anna ticked one box. Now strangers are messaging everyone in her contact list.",
-                cast: [["Anna (borrower)", "#e88fb0", "#2b1b10"], ["Marco (developer)", "#2a9d8f", "#111"], ["Ms. Reyes (PM)", "#c44569", "#2b1b10"], ["Jay (senior dev)", "#555", "#442", "cap:#333"]],
-                b: [[-1, "Anna needs a quick loan. She fills in her details and taps Allow on every permission.", "0:desk", "calm", "📱", "Allow contacts ✔  Allow photos ✔"],
-                [0, "Done with registration. Nothing to worry about!", "0:cheer"],
-                [-1, "Weeks later, Anna's phone will not stop buzzing.", "0:phone", "alarm", "💬", "“Ate, bakit ka nasa listahan ng delinquent?”"],
-                [0, "I never gave them permission to message my family!", "0:sad,0:shock", "dark"],
-                [-1, "At the app company, Marco is asked to build that exact feature.", "1:desk,0:x=8", "calm", "🧑‍💻", "Add access: contacts, photos, SMS"],
-                [2, "Add contact access for reminders. Investors want collections up.", "2:point"],
-                [3, "It's in the terms and conditions. Every lending app does it.", "3:point"],
-                [1, "“Everyone does it” isn't a standard. It's an excuse. Let me propose an opt-in payslip upload instead.", "1:point", "warm", "📄", "Opt-in. Only necessary data."],
-                [2, "...Send me the draft.", "2:idle,1:cheer"]],
-                q: "Behind every permission screen is a person."
+                t: "Permission Granted", g: "Realistic drama", i: "Data privacy, informed consent, and duty to the public (RA 10173, ACM Code of Ethics)", e: "📱", sky: "#23284a",
+                h: "Anna ticked one box for an emergency loan. Now strangers are messaging everyone in her contacts. At the startup, Marco faces a defining choice.",
+                cast: [["Marco (developer)", "#2a9d8f", "#111"], ["Ms. Reyes (PM)", "#c44569", "#2b1b10"], ["Jay (senior dev)", "#555", "#442", "cap:#333"], ["Anna (borrower)", "#e88fb0", "#2b1b10"], ["Dex (QA tester)", "#7c5cbf", "#222"]],
+                b: [
+                    [-1, "Late at night in Anna's room, her phone screen lights up with stacking notifications from friends and relatives.", "3:phone,0:x=8,1:x=8,2:x=8,4:x=8", "alarm", "💬", "“Ate, bakit ka nasa listahan ng delinquent?”"],
+                    [3, "Hindi ko naman sila binigyan ng permission... I only took a small emergency loan.", "3:phone", "alarm", "📵", "“Pinadalhan ako ng message tungkol sa utang mo.”"],
+                    [-1, "Her phone rings. It's her mother. Anna stares at the screen, humiliated and frozen.", "3:shock", "alarm", "📞", "Incoming call: Nanay"],
+                    [-1, "Days earlier, at the startup office. A prototype of the QuickCash loan app sits on Marco's monitor.", "0:desk,1:point,2:desk,4:desk,3:x=8", "calm", "💻", "QuickCash loan app prototype"],
+                    [1, "Marco, update on the loan app. Investors want faster approvals and better collection rates.", "1:point", "calm"],
+                    [0, "Okay. What do you need from me?", "0:idle", "calm"],
+                    [1, "In the permissions screen, add access to contacts, photos, and SMS.", "1:point", "dark", "📱", "Permissions: contacts · photos · SMS"],
+                    [0, "For credit scoring?", "0:idle", "calm"],
+                    [1, "Credit scoring... and reminders. If a borrower stops responding, our collection agents reach out through their contacts.", "1:point", "dark", "⚠️", "Debt reminders via personal contacts"],
+                    [-1, "Marco pauses, unsettled. He looks across the room at Dex. Dex glances back and quickly looks away.", "0:idle,4:shake", "dark"],
+                    [-1, "Later, Marco confronts Jay at the whiteboard to challenge the architecture.", "0:point,2:idle,1:desk", "calm", "⚖️", "RA 10173 — Data Privacy Act of 2012"],
+                    [0, "Jay, we don't need her contacts to assess her income. And her contacts never agreed to this.", "0:point", "calm"],
+                    [2, "It's in the terms and conditions. Nobody reads them, but legally it's there. Every lending app does it. If we don't, we lose.", "2:point", "dark", "📜", "T&C buried consent"],
+                    [0, "That's not consent. Consent has to be informed and specific. The law says we only collect what is necessary for a declared purpose.", "0:point", "calm"],
+                    [2, "Every lending app in the market scrapes contacts, Marco. That's just the industry standard.", "2:idle", "dark"],
+                    [0, "“Everyone does it” isn't a standard. It's an excuse.", "0:point", "dark"],
+                    [-1, "Flash to Anna: showing her phone to a friend in tears, unable to face her neighbors.", "3:x=0,3:sad,0:x=-4", "alarm", "😔", "The human cost of automated shaming"],
+                    [1, "Marco, I'm not asking you to hurt anyone. I'm asking you to hit our deadline.", "1:point,3:x=8,0:idle", "dark"],
+                    [0, "I know. But if the feature works as you described, we are the ones who build the harassment. The code is ours.", "0:point", "dark", "🛑", "ACM Code of Ethics: Avoid harm"],
+                    [-1, "Evening. The office is nearly empty. Dex quietly walks over to Marco's desk.", "0:desk,4:x=-3.8", "calm", "🌙", "Office after hours"],
+                    [4, "You know you could just ship it. Nobody would blame you.", "4:idle", "calm"],
+                    [0, "I would.", "0:idle", "calm"],
+                    [-1, "Marco stays late and drafts an alternative: income verification via opt-in payslip upload, data minimization, and privacy impact assessment.", "0:desk", "warm", "📄", "Alternative: opt-in payslip upload · data minimization"],
+                    [-1, "Next morning. Meeting room. Marco presents the slide to Ms. Reyes and Jay. Dex watches closely.", "0:point,1:idle,2:idle,4:idle", "calm", "📊", "Alternative proposal presented"],
+                    [0, "We can still improve approval speed without scraping contacts. It takes a few more days, but it protects users and shields the company from DPA penalties.", "0:point", "calm", "🛡️", "Data Privacy Act penalties: up to ₱5M + criminal liability"],
+                    [1, "...", "1:idle", "dark"],
+                    [1, "...Send me the full draft.", "1:cheer,0:cheer,4:cheer", "warm", "✅", "Contacts scraping scrapped — alternative approved"],
+                    [-1, "Jay glances at Dex, quietly nodding in respect. The code protects the user, not just the company.", "2:cheer,4:cheer", "warm", "🤝", "Ethical engineering prevails"]
+                ],
+                q: "Behind every permission screen is a person.\n\nAs computing professionals, we don't just write code. We decide what that code is allowed to do to people.\n\nContribute to society and avoid harm. — ACM Code of Ethics"
             },
             {
                 t: "The Name on the Patent", g: "Psychological drama", i: "Betrayal, intellectual property, true mastery", e: "⚙️", sky: "#3a3326",
@@ -745,15 +767,29 @@
         function goVote() { mode = 'vote'; show(false) }
 
         /* ---- CHAPTER CARD ---- */
+        let chapterTimer = null;
         function showChapter(title, sub, color, ms) {
+            hideChapter();
             const el = $('#chapter-card');
             el.style.display = 'flex';
-            el.style.animation = '';
             el.innerHTML = `<div class="ch-label">📖 Chapter</div><div class="ch-title" style="color:${color || '#fff'}">${title}</div><div class="ch-sub">${sub || ''}</div>`;
             el.style.animation = 'chapterIn .4s ease forwards';
-            if (ms) setTimeout(() => { el.style.animation = 'chapterOut .4s ease forwards'; setTimeout(() => el.style.display = 'none', 420) }, ms);
+            if (ms) {
+                chapterTimer = setTimeout(() => {
+                    el.style.animation = 'chapterOut .4s ease forwards';
+                    setTimeout(() => {
+                        hideChapter();
+                        next();
+                    }, 400);
+                }, ms);
+            }
         }
-        function hideChapter() { const el = $('#chapter-card'); el.style.display = 'none'; el.style.animation = '' }
+        function hideChapter() {
+            if (chapterTimer) { clearTimeout(chapterTimer); chapterTimer = null; }
+            const el = $('#chapter-card');
+            el.style.display = 'none';
+            el.style.animation = '';
+        }
 
         /* ---- REWIND EFFECT ---- */
         function doRewind(onDone) {
@@ -835,7 +871,7 @@
 
             // -3: chapter banner (title, sub, color)
             if (b[0] === -3) {
-                showChapter(b[1], b[2], b[3], 0);
+                showChapter(b[1], b[2], b[3], 1600);
                 $('#narr').style.display = 'none';
                 $('#next').textContent = 'Next';
                 // Also clear prop
@@ -871,6 +907,7 @@
         }
 
         function next() {
+            hideChapter();
             startMusic(); started = true; const st = S[si];
 
             if (mode === 'title') { mode = 'play'; bi = 0; show(true); if (st.b[0][0] >= -1) apply(st.b[0][2]); return }
@@ -909,6 +946,7 @@
         }
 
         function back() {
+            hideChapter();
             if (mode === 'vote') { mode = 'play'; si = S.length - 1; bi = S[si].b.length; show(true); return }
             if (bi > -1) { bi--; if (bi === -1) mode = 'title' } else if (si > 0) { si--; bi = S[si].b.length; mode = 'play' }
             show(true)
