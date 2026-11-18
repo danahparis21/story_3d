@@ -275,6 +275,95 @@
         .box small {
             color: #667
         }
+
+        .winner-banner {
+            width: min(640px, 94vw);
+            background: linear-gradient(135deg, #1e293b 0%, #2a2215 50%, #1e293b 100%);
+            border: 2px solid #ffd23f;
+            border-radius: 20px;
+            padding: 22px 24px;
+            margin: 16px 0;
+            box-shadow: 0 0 28px rgba(255, 210, 63, 0.28);
+            text-align: center;
+            animation: pop .4s ease;
+        }
+
+        .standings-box {
+            margin-top: 14px;
+            width: min(640px, 94vw);
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #1e293b;
+            text-align: left;
+        }
+
+        .standings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .standings-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.92rem;
+            padding: 10px 14px;
+            background: #182236;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #24324d;
+        }
+
+        .standings-row.is-winner {
+            border-color: #ffd23f;
+            background: #242217;
+            box-shadow: 0 0 10px rgba(255, 210, 63, 0.18);
+        }
+
+        .standings-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: rgba(52, 211, 153, 0.14);
+            pointer-events: none;
+            transition: width .5s ease;
+        }
+
+        .standings-row.is-winner .standings-bar {
+            background: rgba(255, 210, 63, 0.22);
+        }
+
+        .standings-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .standings-score {
+            position: relative;
+            z-index: 1;
+            font-weight: 800;
+            color: #34d399;
+            background: #064e3b;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .standings-row.is-winner .standings-score {
+            color: #1e1e0a;
+            background: #ffd23f;
+        }
     </style>
 </head>
 
@@ -521,38 +610,63 @@
         }
         $('#next').onclick = next; $('#back').onclick = back;
 
-        /* ---- SUPABASE CONFIGURATION ---- */
-        // Replace with your project details from Supabase Dashboard > Project Settings > API
-        const SUPABASE_URL = '';
+        /* ---- SUPABASE & VOTING API ---- */
+        // Reused from IT Passport project (https://kkpuswsvnibhgpgxmfki.supabase.co)
+        const SUPABASE_URL = 'https://kkpuswsvnibhgpgxmfki.supabase.co';
         const SUPABASE_ANON_KEY = '';
 
         let sbClient = null;
         try {
-            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_')) {
+            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('YOUR_')) {
                 sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch (e) {
-            console.warn('Supabase initialization failed:', e);
+            console.warn('Direct Supabase client not active (using /api/vote):', e);
         }
 
         /* ---- VOTE ---- */
         let liveScores = null;
 
         async function getVoteScores() {
-            if (!sbClient) return null;
+            // 1. Try serverless /api/vote (Vercel deployment)
             try {
-                const { data, error } = await sbClient.from('votes').select('story_index');
-                if (error) throw error;
-                const counts = {};
-                for (let i = 0; i < S.length; i++) counts[i] = 0;
-                data.forEach(r => {
-                    if (counts[r.story_index] !== undefined) counts[r.story_index]++;
-                });
-                return counts;
-            } catch (e) {
-                console.warn('Could not fetch scores:', e);
-                return null;
+                const res = await fetch('/api/vote');
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.votes) {
+                        const counts = {};
+                        for (let i = 0; i < S.length; i++) counts[i] = 0;
+                        json.votes.forEach(r => {
+                            if (counts[r.story_index] !== undefined) counts[r.story_index]++;
+                        });
+                        return counts;
+                    }
+                }
+            } catch (err) {}
+
+            // 2. Try direct Supabase client if configured
+            if (sbClient) {
+                try {
+                    const { data, error } = await sbClient.from('story_votes').select('story_index');
+                    if (!error && data) {
+                        const counts = {};
+                        for (let i = 0; i < S.length; i++) counts[i] = 0;
+                        data.forEach(r => {
+                            if (counts[r.story_index] !== undefined) counts[r.story_index]++;
+                        });
+                        return counts;
+                    }
+                } catch (e) {}
             }
+
+            // 3. Fallback to local storage (for offline or local preview)
+            const localVotes = JSON.parse(localStorage.getItem('local_all_votes') || '[]');
+            const counts = {};
+            for (let i = 0; i < S.length; i++) counts[i] = 0;
+            localVotes.forEach(i => {
+                if (counts[i] !== undefined) counts[i]++;
+            });
+            return counts;
         }
 
         function getStoredVotes() {
@@ -569,52 +683,7 @@
         async function drawVote() {
             const stored = getStoredVotes();
             if (stored && stored.length > 0) {
-                const cards = stored.map(idx => S[idx]).filter(Boolean).map(v => `
-                    <div style="background:#182236; border:1px solid #3b82f6; border-radius:12px; padding:12px 18px; text-align:left; min-width:210px; display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:2rem">${v.e}</span>
-                        <div>
-                            <div style="font-weight:700; color:#fff">${v.t}</div>
-                            <div style="font-size:0.8rem; color:#94a3b8">${v.g}</div>
-                        </div>
-                    </div>
-                `).join('');
-
-                let scoresHtml = '';
-                if (liveScores) {
-                    const sortedIndices = [...Array(S.length).keys()].sort((a, b) => (liveScores[b] || 0) - (liveScores[a] || 0));
-                    scoresHtml = `
-                        <div style="margin-top:24px; width:min(620px, 94vw); background:#0f172a; border-radius:14px; padding:18px; border:1px solid #1e293b; text-align:left;">
-                            <h3 style="margin:0 0 12px; font-size:1.1rem; color:#ffd23f; text-align:center;">📊 Live Standings (${Object.values(liveScores).reduce((a,b)=>a+b,0)} total votes)</h3>
-                            <div style="display:flex; flex-direction:column; gap:8px;">
-                                ${sortedIndices.map((idx, rank) => {
-                                    const s = S[idx], count = liveScores[idx] || 0;
-                                    return `
-                                        <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.9rem; padding:8px 12px; background:#1e293b; border-radius:8px;">
-                                            <span><b>#${rank+1}</b> ${s.e} ${s.t}</span>
-                                            <span style="font-weight:700; color:#34d399; background:#064e3b; padding:2px 10px; border-radius:999px;">${count} vote${count === 1 ? '' : 's'}</span>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                $('#vote').innerHTML = `
-                    <div style="font-size:3.5rem">🎉</div>
-                    <h2 style="margin:8px 0 4px">Thanks for voting!</h2>
-                    <p style="color:#cbd5e1; margin-bottom:16px">You cast your vote for ${stored.length} stor${stored.length === 1 ? 'y' : 'ies'}:</p>
-                    <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width:850px; margin-bottom:20px">
-                        ${cards}
-                    </div>
-                    ${scoresHtml}
-                    <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-                        <button class="pill" onclick="resetVote()" style="background:#334155; color:#fff">Change my vote</button>
-                        <button class="pill on" onclick="jump(0)">Replay stories</button>
-                    </div>
-                `;
-
-                if (sbClient && !liveScores) {
+                if (!liveScores) {
                     getVoteScores().then(sc => {
                         if (sc) {
                             liveScores = sc;
@@ -622,9 +691,121 @@
                         }
                     });
                 }
+
+                const myCards = stored.map(idx => S[idx]).filter(Boolean).map(v => `
+                    <div style="background:#182236; border:1px solid #3b82f6; border-radius:12px; padding:10px 16px; text-align:left; min-width:200px; display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.8rem">${v.e}</span>
+                        <div>
+                            <div style="font-weight:700; color:#fff; font-size:0.95rem">${v.t}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8">${v.g}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                let winnerHtml = '';
+                let standingsHtml = '';
+
+                if (liveScores) {
+                    const totalVotes = Object.values(liveScores).reduce((a, b) => a + b, 0);
+                    const maxVotes = Math.max(...Object.values(liveScores));
+                    const winners = [];
+                    if (maxVotes > 0) {
+                        for (let i = 0; i < S.length; i++) {
+                            if (liveScores[i] === maxVotes) winners.push(i);
+                        }
+                    }
+
+                    // WINNER DISPLAY
+                    if (winners.length === 1) {
+                        const winStory = S[winners[0]];
+                        const pct = totalVotes > 0 ? Math.round((maxVotes / totalVotes) * 100) : 0;
+                        winnerHtml = `
+                            <div class="winner-banner">
+                                <div style="font-size:0.8rem; font-weight:800; color:#ffd23f; letter-spacing:0.12em; text-transform:uppercase;">👑 MOST VOTED STORY</div>
+                                <div style="font-size:3.2rem; margin:6px 0 2px;">${winStory.e}</div>
+                                <h3 style="margin:0 0 6px; font-size:1.7rem; color:#fff;">${winStory.t}</h3>
+                                <div style="font-size:1.05rem; color:#ffd23f; font-weight:800;">
+                                    🏆 1st Place Winner with ${maxVotes} vote${maxVotes === 1 ? '' : 's'} (${pct}% of total votes)
+                                </div>
+                                <p style="margin:10px auto 0; max-width:520px; font-size:0.92rem; color:#cbd5e1; font-style:italic;">"${winStory.q}"</p>
+                            </div>
+                        `;
+                    } else if (winners.length > 1) {
+                        const pct = totalVotes > 0 ? Math.round((maxVotes / totalVotes) * 100) : 0;
+                        winnerHtml = `
+                            <div class="winner-banner">
+                                <div style="font-size:0.8rem; font-weight:800; color:#ffd23f; letter-spacing:0.12em; text-transform:uppercase;">🤝 TIED FOR FIRST PLACE</div>
+                                <div style="display:flex; justify-content:center; gap:16px; margin:10px 0 6px;">
+                                    ${winners.map(w => `<span style="font-size:2.6rem;">${S[w].e}</span>`).join('')}
+                                </div>
+                                <h3 style="margin:0 0 6px; font-size:1.4rem; color:#fff;">
+                                    ${winners.map(w => S[w].t).join(' & ')}
+                                </h3>
+                                <div style="font-size:1rem; color:#ffd23f; font-weight:800;">
+                                    Tied with ${maxVotes} vote${maxVotes === 1 ? '' : 's'} each (${pct}% of total votes)
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // FULL STANDINGS LEADERBOARD
+                    const sortedIndices = [...Array(S.length).keys()].sort((a, b) => (liveScores[b] || 0) - (liveScores[a] || 0));
+                    standingsHtml = `
+                        <div class="standings-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <h3 style="margin:0; font-size:1.15rem; color:#ffd23f;">📊 Complete Results Leaderboard</h3>
+                                <span style="font-size:0.85rem; color:#94a3b8; font-weight:600;">${totalVotes} total vote${totalVotes === 1 ? '' : 's'} cast</span>
+                            </div>
+                            <div class="standings-list">
+                                ${sortedIndices.map((idx, rank) => {
+                                    const s = S[idx];
+                                    const count = liveScores[idx] || 0;
+                                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                                    const isTop = maxVotes > 0 && count === maxVotes;
+                                    const medal = rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `#${rank + 1}`;
+                                    return `
+                                        <div class="standings-row ${isTop ? 'is-winner' : ''}">
+                                            <div class="standings-bar" style="width:${pct}%"></div>
+                                            <div class="standings-content">
+                                                <span style="font-size:1.1rem; width:28px; text-align:center;">${medal}</span>
+                                                <span style="font-size:1.3rem">${s.e}</span>
+                                                <span style="color:${isTop ? '#ffd23f' : '#f8fafc'}">${s.t}</span>
+                                            </div>
+                                            <div class="standings-score">
+                                                ${count} vote${count === 1 ? '' : 's'} (${pct}%)
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    standingsHtml = `
+                        <div style="margin-top:20px; color:#94a3b8; font-size:0.95rem;">
+                            ⏳ Calculating live vote standings...
+                        </div>
+                    `;
+                }
+
+                $('#vote').innerHTML = `
+                    <div style="font-size:3.5rem">🎉</div>
+                    <h2 style="margin:6px 0 2px">Thanks for voting!</h2>
+                    <p style="color:#cbd5e1; margin-bottom:14px; font-size:0.95rem;">You voted for <b>${stored.length}</b> stor${stored.length === 1 ? 'y' : 'ies'}:</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:850px;">
+                        ${myCards}
+                    </div>
+                    ${winnerHtml}
+                    ${standingsHtml}
+                    <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+                        <button class="pill" onclick="resetVote()" style="background:#334155; color:#fff">Change my vote</button>
+                        <button class="pill on" onclick="jump(0)">Replay stories</button>
+                    </div>
+                `;
                 return;
             }
 
+            // Voting UI (before vote is submitted)
             $('#vote').innerHTML = `
                 <h2>Which stories did you like best?</h2>
                 <p style="color:#cbd5e1; margin:4px 0 12px">Pick <b>up to 3</b> stories (<b>${picked.length} / 3 selected</b>), then lock in your vote.</p>
@@ -670,25 +851,40 @@
         }
 
         async function saveVote(indices) {
-            if (sbClient) {
-                let voterId = localStorage.getItem('voter_uuid');
-                if (!voterId) {
-                    voterId = 'voter_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-                    localStorage.setItem('voter_uuid', voterId);
-                }
-                const rows = indices.map(i => ({
-                    story_index: i,
-                    story_title: S[i].t,
-                    voter_id: voterId
-                }));
-                const { error } = await sbClient.from('votes').insert(rows);
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
-                }
-            } else {
-                console.log('Supabase credentials not configured yet. Saving vote locally:', indices.map(i => S[i].t));
+            let voterId = localStorage.getItem('voter_uuid');
+            if (!voterId) {
+                voterId = 'voter_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                localStorage.setItem('voter_uuid', voterId);
             }
+            const payload = indices.map(i => ({
+                story_index: i,
+                story_title: S[i].t,
+                voter_id: voterId
+            }));
+
+            // 1. Try /api/vote serverless endpoint (Vercel)
+            try {
+                const res = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ votes: payload })
+                });
+                if (res.ok) {
+                    console.log('Saved to Supabase via /api/vote');
+                    return;
+                }
+            } catch (apiErr) {}
+
+            // 2. Try direct Supabase client if configured
+            if (sbClient) {
+                const { error } = await sbClient.from('story_votes').insert(payload);
+                if (!error) return;
+            }
+
+            // 3. Fallback: local simulated vote tallies for offline preview
+            const localVotes = JSON.parse(localStorage.getItem('local_all_votes') || '[]');
+            indices.forEach(i => localVotes.push(i));
+            localStorage.setItem('local_all_votes', JSON.stringify(localVotes));
         }
 
         async function submit() {
@@ -698,15 +894,12 @@
             try {
                 await saveVote(picked);
                 localStorage.setItem('voted_stories', JSON.stringify(picked));
-                if (sbClient) {
-                    liveScores = await getVoteScores();
-                }
+                liveScores = await getVoteScores();
                 drawVote();
             } catch (e) {
-                const msg = $('#msg');
-                if (msg) msg.textContent = 'Could not sync to cloud database, saving locally...';
                 localStorage.setItem('voted_stories', JSON.stringify(picked));
-                setTimeout(() => drawVote(), 1200);
+                liveScores = await getVoteScores();
+                drawVote();
             }
         }
 
