@@ -1136,12 +1136,16 @@
                 } catch (e) {}
             }
 
-            // 3. Fallback to local storage (for offline or local preview)
-            const localVotes = JSON.parse(localStorage.getItem('local_all_votes') || '[]');
+            // 3. Fallback to local storage (for offline or local preview, keyed by voterId to prevent duplicates)
+            const voterMap = JSON.parse(localStorage.getItem('local_voter_map') || '{}');
             const counts = {};
             for (let i = 0; i < S.length; i++) counts[i] = 0;
-            localVotes.forEach(i => {
-                if (counts[i] !== undefined) counts[i]++;
+            Object.values(voterMap).forEach(arr => {
+                if (Array.isArray(arr)) {
+                    arr.forEach(i => {
+                        if (counts[i] !== undefined) counts[i]++;
+                    });
+                }
             });
             return counts;
         }
@@ -1354,14 +1358,17 @@
 
             // 2. Try direct Supabase client if configured
             if (sbClient) {
-                const { error } = await sbClient.from('story_votes').insert(payload);
-                if (!error) return;
+                try {
+                    await sbClient.from('story_votes').delete().eq('voter_id', voterId);
+                    const { error } = await sbClient.from('story_votes').insert(payload);
+                    if (!error) return;
+                } catch (e) {}
             }
 
-            // 3. Fallback: local simulated vote tallies for offline preview
-            const localVotes = JSON.parse(localStorage.getItem('local_all_votes') || '[]');
-            indices.forEach(i => localVotes.push(i));
-            localStorage.setItem('local_all_votes', JSON.stringify(localVotes));
+            // 3. Fallback: local storage voter map (keyed by voterId so changing vote replaces previous votes)
+            const voterMap = JSON.parse(localStorage.getItem('local_voter_map') || '{}');
+            voterMap[voterId] = indices;
+            localStorage.setItem('local_voter_map', JSON.stringify(voterMap));
         }
 
         async function submit() {
@@ -1380,7 +1387,21 @@
             }
         }
 
-        function resetVote() {
+        async function resetVote() {
+            const voterId = localStorage.getItem('voter_uuid');
+            if (voterId) {
+                try {
+                    await fetch('/api/vote?voter_id=' + encodeURIComponent(voterId), { method: 'DELETE' });
+                } catch (e) {}
+                if (sbClient) {
+                    try {
+                        await sbClient.from('story_votes').delete().eq('voter_id', voterId);
+                    } catch (e) {}
+                }
+                const voterMap = JSON.parse(localStorage.getItem('local_voter_map') || '{}');
+                delete voterMap[voterId];
+                localStorage.setItem('local_voter_map', JSON.stringify(voterMap));
+            }
             localStorage.removeItem('voted_stories');
             localStorage.removeItem('voted_story');
             picked = [];

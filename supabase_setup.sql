@@ -29,3 +29,10 @@ on public.story_votes
 for select
 to anon, authenticated, service_role
 using (true);
+
+-- 5. Policy to allow deleting previous votes when changing vote (prevents duplicate votes)
+create policy "Allow delete story_votes"
+on public.story_votes
+for delete
+to anon, authenticated, service_role
+using (true);

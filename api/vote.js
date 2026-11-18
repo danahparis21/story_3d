@@ -1,4 +1,4 @@
-// Vercel Serverless Function: Save and Fetch Story Votes from Supabase
+// Vercel Serverless Function: Save, Replace, and Fetch Story Votes from Supabase
 export const config = { maxDuration: 15 };
 
 function getSupabaseConfig() {
@@ -13,7 +13,7 @@ function getSupabaseConfig() {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
@@ -43,17 +43,28 @@ export default async function handler(req, res) {
       return res.status(200).json({ configured: true, votes: rows });
     }
 
-    // POST: Insert 1 to 3 story votes
+    // POST: Insert 1 to 3 story votes (replaces any previous votes for this voter_id so no duplicates exist)
     if (req.method === 'POST') {
       const { votes } = req.body || {};
       if (!votes || !Array.isArray(votes) || votes.length === 0) {
         return res.status(400).json({ error: 'Votes array is required' });
       }
 
+      const voterId = votes[0]?.voter_id ? String(votes[0].voter_id) : null;
+
+      // 1. If voter_id is present, remove any previous votes from this voter first
+      if (voterId) {
+        await fetch(`${sb.url}/rest/v1/story_votes?voter_id=eq.${encodeURIComponent(voterId)}`, {
+          method: 'DELETE',
+          headers
+        });
+      }
+
+      // 2. Insert the fresh new votes
       const rows = votes.map(v => ({
         story_index: Number(v.story_index),
         story_title: String(v.story_title || ''),
-        voter_id: v.voter_id ? String(v.voter_id) : null
+        voter_id: voterId
       }));
 
       const resp = await fetch(`${sb.url}/rest/v1/story_votes`, {
@@ -70,7 +81,19 @@ export default async function handler(req, res) {
         return res.status(resp.status).json({ error: errText || 'Failed to save votes' });
       }
 
-      return res.status(200).json({ success: true, count: rows.length });
+      return res.status(200).json({ success: true, count: rows.length, replaced: !!voterId });
+    }
+
+    // DELETE: Remove votes for a voter when they click "Change my vote"
+    if (req.method === 'DELETE') {
+      const voterId = req.query.voter_id || (req.body && req.body.voter_id);
+      if (voterId) {
+        await fetch(`${sb.url}/rest/v1/story_votes?voter_id=eq.${encodeURIComponent(String(voterId))}`, {
+          method: 'DELETE',
+          headers
+        });
+      }
+      return res.status(200).json({ success: true, deleted: true });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
