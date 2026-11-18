@@ -461,17 +461,46 @@
          moods: calm dark alarm warm */
         const S = [
             {
-                t: "The Human Factor", g: "Cybersecurity thriller", i: "Social engineering and trust", e: "🏰", sky: "#2a3b66",
-                h: "This company spent millions to be impossible to hack. It still got robbed, and nobody broke in.",
-                cast: [["CEO Daniel", "#26325c", "#2b1b10"], ["Mia (new partner)", "#e0405a", "#6b3a1e"], ["Chief Ray (security)", "#3a3a3a", "#111", "cap:#1d3a8a"]],
-                b: [[-1, "Welcome to Titan Corp, the most secure company in the country. Firewalls, biometrics, armed guards.", "2:cheer", "calm", "🔒", "Security score: 100%"],
-                [2, "Drill complete. Nobody gets past me.", "0:point"],
-                [-1, "Then the CEO, Daniel, falls in love with Mia. And he starts to trust her a little too much.", "1:x=-1", "warm", "💘", "New relationship"],
-                [1, "Can I see your office? Just for a minute?"],
-                [0, "Of course. No badge scan needed. She's with me.", "0:point,2:shake", "calm", "🚪", "Verification: SKIPPED"],
-                [-1, "Small exceptions that nobody noticed. Until one morning...", "2:shock,0:shock", "alarm", "🚨", "CONFIDENTIAL FILES COPIED"],
-                [2, "Firewall: working. Cameras: working. The breach came through a trusted door.", "2:sad"],
-                [0, "She never loved me. She was sent to get inside.", "0:sad,1:x=8", "dark"]],
+                t: "The Human Factor", g: "Cybersecurity thriller · Corporate drama", i: "Social engineering, trust, and human vulnerability", e: "🏰", sky: "#1a2440",
+                h: "Titan Corp spent millions to become impossible to hack. No firewall was ever breached. No intrusion ever succeeded. Then the CEO met someone.",
+                cast: [["CEO Daniel", "#26325c", "#2b1b10"], ["Mia", "#e0405a", "#6b3a1e"], ["Chief Ray (security)", "#3a3a3a", "#111", "cap:#1d3a8a"]],
+                b: [
+                    /* ---- ACT 1: THE FORTRESS ---- */
+                    [-3, "ACT I — The Fortress", "No system has ever been breached.", "#7eb3ff"],
+                    [-1, "Titan Corp is launching its most valuable platform yet. CEO Daniel orders a complete security overhaul. No expense is spared.", "0:desk,2:desk", "calm", "💰", "Security budget: ₱80 million"],
+                    [-1, "Advanced firewalls. Biometric scanners. Encrypted databases. 247 cameras. Armed guards on every floor. Every employee trained.", "2:cheer", "calm", "🔒", "Firewalls · MFA · Biometrics · CCTV · Guards"],
+                    [2, "Penetration test complete, sir. Every attempted breach — blocked. Every simulated intrusion — detected. We are airtight.", "2:cheer,0:cheer", "calm", "✅", "Pen test result: 0 breaches"],
+                    [0, "Good. This platform carries everything — our R&D, our client data, our competitive edge. Nothing gets through.", "0:point", "calm"],
+                    [2, "With respect, sir — in my experience, the greatest threat is never the one you train for.", "2:point"],
+                    [0, "Then we train for everything.", "0:cheer", "calm", "🏆", "Titan Corp: most secure company in the country"],
+
+                    /* ---- ACT 2: THE EXCEPTION ---- */
+                    [-3, "ACT II — The Exception", "The fortress had one door nobody thought to guard.", "#ffd23f"],
+                    [-1, "Three months later. A technology summit. For the first time in months, CEO Daniel steps outside his fortress.", "0:idle", "warm"],
+                    [-1, "Her name is Mia. She approaches him during the networking session. She has read his white paper on zero-trust architecture.", "1:x=-1,0:idle", "warm", "💘", "Summit: chance encounter"],
+                    [1, "Your paper on zero-trust was brilliant. Most executives talk about security. You actually understand it.", "1:idle"],
+                    [0, "You actually read it?", "0:cheer", "warm"],
+                    [-1, "Over the following weeks, Mia is everywhere. Brilliant, warm, and endlessly curious about his work. Daniel opens up — more than he ever has.", "0:idle,1:idle", "warm", "📅", "Weeks pass: dinners, calls, shared plans"],
+                    [0, "She's different. She sees the real work behind everything we build.", "0:cheer", "warm"],
+                    [-1, "Then the small exceptions begin. Each one feels harmless. Each one is a door left slightly open.", "2:idle", "dark", "🚪", "Exceptions begin"],
+                    [1, "Could I come see your office? I'd love to see where it all happens.", "1:idle", "warm"],
+                    [0, "Of course. No badge scan needed — she's with me.", "0:point,2:shake", "dark", "⚠️", "Visitor verification: SKIPPED"],
+                    [2, "Sir, protocol requires all visitors to sign in at reception regardless—", "2:point"],
+                    [0, "She's with me, Ray. That's enough.", "0:point", "dark"],
+                    [-1, "A confidential briefing mentioned over dinner. Access codes spoken in a private car. A personal laptop connected to the company network at home.", "0:sad,1:idle", "dark", "💻", "Company device: accessed outside secure perimeter"],
+
+                    /* ---- ACT 3: THE BREACH ---- */
+                    [-3, "ACT III — The Breach", "The firewall never failed. The human did.", "#ff4d4d"],
+                    [-1, "On a Tuesday morning, Chief Ray receives an alert unlike anything he has seen before.", "2:shock", "alarm", "🚨", "ALERT: Unusual file access detected"],
+                    [2, "Sir... our R&D files. The platform launch data. Client records. 847 files — all copied. Last night.", "2:shock,0:shock", "alarm", "☠️", "847 files exfiltrated — platform data, client records, R&D"],
+                    [0, "Impossible. The firewall—", "0:shock", "alarm"],
+                    [2, "The firewall is functioning. The cameras are recording. The servers are encrypted. The breach didn't come from outside, sir. It came from inside a legitimate session.", "2:point", "alarm", "🔍", "Breach origin: legitimate CEO credentials · personal device"],
+                    [-1, "The investigation traces the access to CEO-level credentials, used from a personal device at a private residence. The same night Mia was there.", "0:sad", "dark", "📍", "Location: CEO's home · Time: 2:14 AM"],
+                    [2, "Someone didn't break in, sir. Someone was let in.", "2:point,0:sad", "dark"],
+                    [-1, "The background check on Mia — the one Daniel waived weeks ago — finally comes back. The name is false. The identity is fabricated. She was placed there.", "1:x=8", "dark", "📋", "Background check: NEVER COMPLETED — waived by CEO"],
+                    [0, "The relationship... the whole thing... it was an operation. I was the vulnerability.", "0:sad", "dark"],
+                    [2, "We spent eighty million building the strongest system in the country. And the breach walked in through the front door.", "2:sad", "dark", "🏰", "Titan Corp: breached — not by code, but by trust"]
+                ],
                 q: "The strongest firewall cannot protect you from the human who opens the door."
             },
             {
