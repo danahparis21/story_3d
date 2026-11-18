@@ -825,6 +825,51 @@
                     [2, "Grabe, ang bilis ng PayLokal! Dati pa ko gumagamit nito, hindi ko ibibigay sa iba!", "2:cheer", "warm", "🏪", "Users: safe and happy"]
                 ],
                 q: "Users never see the bugs we hide. They only feel the damage.\n\nIf you see something — document it. Report it. Don't patch later."
+            },
+            {
+                t: "Behind the Magic",
+                g: "Technology thriller · Drama",
+                i: "Data privacy, invisible consent, AI trained on user data",
+                e: "🤖",
+                sky: "#141a29",
+                h: "Millions adore their empathetic AI assistant. But where did it learn to feel so human?",
+                cast: [
+                    ["Anna (borrower)", "#e88fb0", "#2b1b10"],
+                    ["Marco (AI dev)", "#2a9d8f", "#1e293b"],
+                    ["Jay (lead dev)", "#475569", "#334155", "cap:#1e293b"],
+                    ["Ken (AI user)", "#3b82f6", "#78350f"]
+                ],
+                b: [
+                    /* ACT 1: THE AI EVERYONE LOVES */
+                    [0, "Another text... 'Ate Anna, bakit ka nasa listahan ng overdue loan?' Paano nila nalaman 'to?!", "0:phone,0:shock", "alarm", "📱", "Unsettling debt notification"],
+                    [-1, "Across the city, a completely different atmosphere surrounds the country's most popular AI assistant: NEXORA.", "3:cheer", "calm", "✨", "NEXORA AI: Millions of daily users"],
+                    [3, "Can you explain this complex database architecture and draft a polite email to my manager?", "3:idle", "calm"],
+                    [-1, "NEXORA AI replies instantly with warmth, clarity, and uncanny empathy.", "3:cheer", "warm", "🤖", "AI: 'Of course! Here is your clear breakdown...'"],
+                    [3, "It's scary how accurate it is. It literally understands what I mean, even when I don't explain everything.", "3:cheer", "warm"],
+
+                    /* ACT 2: THE CONNECTION & BURIED CONSENT */
+                    [-1, "Few realize that NEXORA is a tech ecosystem. Beside the AI assistant, NEXORA secretly operates FastPeso — an instant digital lending app.", "0:idle", "dark", "🏢", "NEXORA Ecosystem: AI + Digital Lending"],
+                    [-1, "Desperate to pay hospital bills, Anna registers on FastPeso, inputting her salary, contacts, and personal disclosures.", "0:phone,0:sad", "dark", "📝", "FastPeso Loan Registration: Anna Ramos"],
+                    [-1, "A 14-page Terms & Conditions screen pops up. Anna hurriedly scrolls past clause 14.3 and taps 'I AGREE'.", "0:desk", "dark", "📄", "Clause 14.3: Affiliated AI training data sharing"],
+                    [0, "I just need this approved before 5 PM... I agree to whatever terms.", "0:sad", "dark"],
+                    [-1, "Inside NEXORA's data pipeline, Anna's entire loan application and private disclosure logs are copied into central servers.", "0:idle", "alarm", "⚡", "Data streamed to AI development cluster"],
+
+                    /* ACT 3: THE DISCOVERY */
+                    [-1, "At NEXORA AI Headquarters, junior developer Marco inspects the conversational dataset powering the next model release.", "1:desk,2:desk", "calm", "💻", "Dataset: LENDING_APP_USER_DATA_V2"],
+                    [1, "Wait... Jay, look at these training logs. These aren't synthetic benchmark chats. These are real text messages, emergency contacts, and family distress notes!", "1:shock,2:idle", "alarm", "⚠️", "Real user records in AI training set"],
+                    [2, "Relax, Marco. It's part of the group data partnership. The terms allow data sharing between sister platforms. That's why our empathy scores beat OpenAI.", "2:point,1:shock", "dark"],
+                    [1, "People think they're talking to a supportive digital friend! They don't know it's learning human emotions by reading people begging for debt extensions!", "1:point,2:idle", "alarm"],
+                    [-1, "Marco filters the training set by timestamp and freezes. Record #4819: Anna Ramos. Overdue rent, family distress, phone contacts.", "1:shock", "alarm", "📋", "Borrower: Anna Ramos (Raw Training Data)"],
+                    [1, "This is Anna's actual life. We're feeding vulnerable people's private pain directly into the neural network.", "1:sad", "dark"],
+
+                    /* ACT 4: THE REALIZATION & IRONY */
+                    [-1, "Late that evening, alone in her room, Anna breaks down from the debt collector calls and turns to her favorite AI assistant.", "0:phone,0:sad", "dark", "🌙", "Midnight: Anna opens NEXORA AI"],
+                    [0, "Can you help me write an email explaining my situation? I can't pay this month and I'm really scared...", "0:sad", "dark"],
+                    [-1, "NEXORA AI replies with deeply personalized empathy: 'I understand how stressful this is. Take a deep breath. You are not alone. Here is a calm, respectful message...'", "0:idle", "warm", "💬", "AI: 'Take a deep breath. You are not alone.'"],
+                    [0, "Thank you. You're honestly better than asking a real person sometimes.", "0:cheer", "warm", "🤍", "Unaware that AI was trained on her own data"],
+                    [-1, "Across the city, Marco stares in silence at his terminal as the data pipeline continues streaming thousands of live borrower records into the AI.", "1:sad,2:desk", "dark", "🔄", "Pipeline active: 148,200 records ingested"]
+                ],
+                q: "You thought you were using the technology.\n\nBut what if the technology was also using you?"
             }
         ];
         const $ = s => document.querySelector(s);
@@ -1033,7 +1078,7 @@
                 $('#bubble').style.display = 'block';
                 const x = chars[spk].userData.tx;
                 if (isMobile) {
-                    camT.set(x * 0.45, 2.3, 9.4); lookT.set(x * 0.4, 1.8, 0);
+                    camT.set(x * 0.35, 2.7, 10.8); lookT.set(x * 0.3, 1.5, 0);
                 } else {
                     camT.set(x * .55, 2.5, 6.6); lookT.set(x * .5, 1.9, 0);
                 }
@@ -1461,7 +1506,7 @@
                 const bw = b.offsetWidth || 240;
                 const bh = b.offsetHeight || 80;
                 const propVisible = $('#prop').style.display === 'flex';
-                const safeTop = (propVisible ? (innerWidth < 640 ? 104 : 120) : (innerWidth < 640 ? 46 : 56)) + bh + 14;
+                const safeTop = (propVisible ? (innerWidth < 640 ? 108 : 120) : (innerWidth < 640 ? 52 : 60)) + bh + 12;
 
                 const headX = (v3.x * .5 + .5) * innerWidth;
                 const minX = bw / 2 + 10;
